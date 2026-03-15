@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- CHANGED: Updated title to reflect the actual topic -->
+  <title>What's Next? — AI in Animation</title>
+
+  <!-- BRANDING UPDATE: Swapped to Barlow Condensed (wide, bold, geometric — Cartoon Network / TT Norms Pro feel)
+       + Inter for clean readable body text. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================
+       WHAT'S NEXT? — AI IN ANIMATION
+       VISUAL REDESIGN: Cartoon Network + Apple Glassmorphism
+       
+       DESIGN SYSTEM:
+       - Background: vivid multicolor gradient, always fully visible
+       - Containers: glass / frosted (semi-transparent + blur)
+       - Text: DARK (#111 / #1a1a1a) — high contrast on glass
+       - Headers: Barlow Condensed 900 — CN bold graphic style
+       - Accent: deep orange #ff5200
+       - No solid black panels. No gray overlays. No full-page darkening.
+       ========================================================== */
+
+    /* ----------------------------------------------------------
+       CSS VARIABLES
+       Changed: text colors shifted to dark, glass panel vars added
+    ---------------------------------------------------------- */
+    :root {
+      --color-bg: transparent;
+
+      /* TEXT: Dark on glass — CN high contrast editorial feel */
+      --color-text: #111111;
+      --color-muted: #444444;
+
+      /* ACCENT: Deep warm orange — all interactive + highlight elements */
+      --color-accent: #ff5200;
+      --color-accent-light: rgba(255, 82, 0, 0.15);
+
+      /* SCENARIO COLORS — keep scenario distinction crisp */
+      --color-optimistic: #00a96e;
+      --color-likely: #ff5200;
+      --color-pessimistic: #d43f3f;
+
+      /* FONTS: unchanged */
+      --font-heading: 'Barlow Condensed', sans-serif;
+      --font-body: 'Inter', sans-serif;
+
+      /* GLASS SYSTEM: Apple-style frosted glass values */
+      --glass-bg: rgba(255, 255, 255, 0.55);
+      --glass-bg-heavy: rgba(255, 255, 255, 0.70);
+      --glass-border: rgba(255, 255, 255, 0.55);
+      --glass-blur: blur(18px);
+      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0,0,0,0.08);
+      --glass-inner: inset 0 1px 0 rgba(255,255,255,0.8);
+
+      /* Active scenario — set by JS */
+      --color-active: var(--color-likely);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* ----------------------------------------------------------
+       BODY / BACKGROUND
+       Changed: richer, more saturated gradient — CN poster palette.
+       Fixed: always fills viewport, nothing overlays it.
+    ---------------------------------------------------------- */
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      /* CN-inspired vivid multicolor gradient — always fully visible */
+      background:
+        radial-gradient(ellipse at 5%   5%,   #4ade80 0%,  transparent 40%),
+        radial-gradient(ellipse at 95%  5%,   #f472b6 0%,  transparent 40%),
+        radial-gradient(ellipse at 95%  95%,  #fb923c 0%,  transparent 40%),
+        radial-gradient(ellipse at 5%   95%,  #facc15 0%,  transparent 40%),
+        radial-gradient(ellipse at 50%  50%,  #60a5fa 0%,  transparent 55%),
+        radial-gradient(ellipse at 25%  70%,  #a78bfa 0%,  transparent 38%),
+        radial-gradient(ellipse at 75%  30%,  #34d399 0%,  transparent 35%),
+        #e0f0ff; /* Soft blue-white base so gradients always blend bright */
+      color: var(--color-text);
+      font-family: var(--font-body);
+    }
+
+    /* Removed: grain overlay (doesn't suit bright gradient + glass aesthetic) */
+    body::before { display: none; }
+
+    /* ----------------------------------------------------------
+       SCENARIO BACKGROUND OVERLAYS
+       Changed: tinted to match new scenario colours, light opacity
+       so they nudge the gradient hue without darkening it
+    ---------------------------------------------------------- */
+    .bg-tinge {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+
+    .bg-tinge.active { opacity: 1; }
+
+    .bg-tinge[data-scenario="optimistic"] {
+      background:
+        radial-gradient(ellipse at 80% 10%, rgba(0, 169, 110, 0.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 10% 90%, rgba(0, 169, 110, 0.10) 0%, transparent 50%);
+    }
+
+    .bg-tinge[data-scenario="likely"] {
+      background:
+        radial-gradient(ellipse at 50% 0%,   rgba(255, 82, 0, 0.12) 0%, transparent 55%),
+        radial-gradient(ellipse at 90% 100%,  rgba(255, 82, 0, 0.06) 0%, transparent 50%);
+    }
+
+    .bg-tinge[data-scenario="pessimistic"] {
+      background:
+        radial-gradient(ellipse at 20% 15%, rgba(212, 63, 63, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 85%, rgba(212, 63, 63, 0.10) 0%, transparent 50%);
+    }
+
+    /* ----------------------------------------------------------
+       HEADER
+       Changed: glass frosted panel — semi-transparent white blur.
+       Dark text + orange accent. No solid black.
+    ---------------------------------------------------------- */
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 1.2rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      /* Glass header: frosted white over the gradient */
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.7);
+      box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08), var(--glass-inner);
+    }
+
+    /* Project title: orange accent, bold CN style */
+    .project-title {
+      font-family: var(--font-heading);
+      font-size: 1.5rem;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      color: var(--color-accent);
+      text-transform: uppercase;
+    }
+
+    /* Team names: dark muted text */
+    .team-names {
+      font-size: 0.72rem;
+      color: var(--color-muted);
+      opacity: 0.7;
+      margin-top: 0.2rem;
+      letter-spacing: 0.06em;
+      font-weight: 400;
+    }
+
+    /* ----------------------------------------------------------
+       SCENARIO TOGGLE
+       Changed: glass pill container, dark text on inactive,
+       orange fill on active — saturated + warm
+    ---------------------------------------------------------- */
+    .toggle-group {
+      display: flex;
+      gap: 0.25rem;
+      background: rgba(255, 255, 255, 0.45);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 2rem;
+      padding: 0.25rem;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: opacity 0.3s ease;
+    }
+
+    .toggle-group.hidden { opacity: 0; pointer-events: none; }
+
+    .toggle-btn {
+      font-family: var(--font-body);
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.5rem 1.25rem;
+      border: none;
+      border-radius: 2rem;
+      cursor: pointer;
+      background: transparent;
+      color: rgba(0, 0, 0, 0.45); /* Dark muted inactive state */
+      transition: all 0.35s ease;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .toggle-btn:hover { color: #111111; }
+
+    /* Active: filled orange pill, near-black text */
+    .toggle-btn.active { background: var(--color-accent); color: #fff; font-weight: 800; }
+    .toggle-btn[data-scenario="optimistic"].active { background: var(--color-optimistic); color: #fff; }
+    .toggle-btn[data-scenario="likely"].active     { background: var(--color-accent); color: #fff; }
+    .toggle-btn[data-scenario="pessimistic"].active { background: var(--color-pessimistic); color: #fff; }
+
+    /* ----------------------------------------------------------
+       VIEW TOGGLE (Timeline / Interview icons)
+       Changed: glass pill, dark icon, orange active state
+    ---------------------------------------------------------- */
+    .header-right { display: flex; align-items: center; gap: 1rem; }
+
+    .view-toggle {
+      display: flex;
+      gap: 0.25rem;
+      background: rgba(255, 255, 255, 0.45);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 2rem;
+      padding: 0.25rem;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .view-btn {
+      width: 2.25rem;
+      height: 2.25rem;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      background: transparent;
+      color: rgba(0,0,0,0.4);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .view-btn:hover { color: #111; }
+
+    /* Active view icon: orange fill */
+    .view-btn.active { background: var(--color-accent); color: #fff; }
+
+    /* ----------------------------------------------------------
+       TIMELINE SCROLL CONTAINER — unchanged structurally
+    ---------------------------------------------------------- */
+    .timeline {
+      display: flex;
+      height: 100vh;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
+      z-index: 1;
+    }
+
+    .timeline::-webkit-scrollbar { height: 3px; }
+    .timeline::-webkit-scrollbar-track { background: transparent; }
+    /* Scrollbar accent: orange */
+    .timeline::-webkit-scrollbar-thumb { background: rgba(255,82,0,0.45); border-radius: 2px; }
+
+    /* ----------------------------------------------------------
+       INTRO PANEL
+       Changed: transparent panel, gradient fully visible.
+       .intro-card = frosted glass floating card
+    ---------------------------------------------------------- */
+    .panel-intro {
+      min-width: 100vw;
+      height: 100vh;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 4rem;
+      position: relative;
+      overflow: hidden;
+      background: transparent; /* Gradient fully visible behind card */
+    }
+
+    /* Corner bracket decorations — use orange on the gradient directly */
+    .panel-intro::before,
+    .panel-intro::after {
+      content: '';
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      border-color: rgba(255, 82, 0, 0.6);
+      border-style: solid;
+      z-index: 3;
+    }
+
+    .panel-intro::before { top: 5rem; left: 5rem; border-width: 2px 0 0 2px; }
+    .panel-intro::after  { bottom: 5rem; right: 5rem; border-width: 0 2px 2px 0; }
+
+    /* Lift all direct children above pseudo-elements */
+    .panel-intro > * { position: relative; z-index: 2; }
+
+    /* GLASS INTRO CARD: Apple frosted glass floating over gradient */
+    .intro-card {
+      position: relative;
+      z-index: 2;
+      background: var(--glass-bg-heavy);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1.5px solid var(--glass-border);
+      box-shadow: var(--glass-shadow), var(--glass-inner);
+      border-radius: 1.25rem;
+      padding: 3.5rem 4rem;
+      max-width: 600px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* INTRO H1: CN bold poster style — dark text on glass */
+    .panel-intro h1 {
+      font-family: var(--font-heading);
+      font-size: clamp(3.5rem, 9vw, 8rem);
+      font-weight: 900;
+      line-height: 1.0;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      color: #111111; /* Dark on glass */
+    }
+
+    /* Orange accent span */
+    .panel-intro h1 span { color: var(--color-accent); }
+
+    /* Orange rule divider */
+    .intro-rule {
+      width: 80px;
+      height: 3px;
+      background: var(--color-accent);
+      margin: 1.5rem auto;
+      border-radius: 2px;
+    }
+
+    /* Subtitle: dark muted text on glass */
+    .panel-intro .subtitle {
+      font-size: 1rem;
+      color: #333333;
+      max-width: 480px;
+      line-height: 1.75;
+      font-weight: 400;
+      letter-spacing: 0.01em;
+    }
+
+    /* Scroll hint */
+    .scroll-hint {
+      position: absolute;
+      bottom: 3rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-accent);
+      opacity: 0.9;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      z-index: 2;
+    }
+
+    .scroll-hint::after {
+      content: '→';
+      font-size: 1rem;
+      animation: nudge 1.5s ease-in-out infinite;
+    }
+
+    @keyframes nudge {
+      0%, 100% { transform: translateX(0); }
+      50%       { transform: translateX(5px); }
+    }
+
+    /* ----------------------------------------------------------
+       YEAR PANELS
+       Changed: transparent panel background — gradient always visible.
+       Content sits directly on the gradient; no dark card behind it.
+       Added: glass-bordered inner content wrapper via padding + z-index stacking.
+    ---------------------------------------------------------- */
+    .panel-year {
+      min-width: 100vw;
+      height: 100vh;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 6rem 6rem 4rem;
+      position: relative;
+      background: transparent; /* Gradient fully visible */
+    }
+
+    /* Frosted glass card fills the inner area of each year panel.
+       Gradient peeks at the edges via the 2.5rem / 3rem inset. */
+    .panel-year::before {
+      content: '';
+      position: absolute;
+      inset: 2.5rem 3rem;
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-radius: 1.25rem;
+      border: 1.5px solid var(--glass-border);
+      box-shadow: var(--glass-shadow), var(--glass-inner);
+      z-index: 0;
+    }
+
+    /* Year watermark: sits inside the glass, very low opacity dark */
+    .year-label {
+      font-family: var(--font-heading);
+      font-size: clamp(8rem, 20vw, 16rem);
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      opacity: 0.06;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      color: #111111; /* Dark watermark on glass */
+      transition: color 0.6s ease;
+      user-select: none;
+      z-index: 1;
+    }
+
+    /* Year header: orange accent, CN condensed style */
+    .year-header {
+      font-family: var(--font-heading);
+      font-size: 1.8rem;
+      font-weight: 900;
+      letter-spacing: 0.25em;
+      color: var(--color-accent);
+      margin-bottom: 2rem;
+      transition: color 0.4s ease;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      text-transform: uppercase;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Decorative rule after year label */
+    .year-header::after {
+      content: '';
+      display: block;
+      width: 40px;
+      height: 3px;
+      background: var(--color-accent);
+      border-radius: 2px;
+      opacity: 0.9;
+      transition: background 0.4s ease;
+    }
+
+    /* ----------------------------------------------------------
+       SCENARIO CONTENT — unchanged structurally
+    ---------------------------------------------------------- */
+    .scenario-content {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      position: relative;
+      z-index: 2;
+    }
+
+    .scenario-content.active { display: block; opacity: 1; }
+
+    /* ----------------------------------------------------------
+       HEADLINE CELL
+       Changed: dark text on glass — strong CN headline typography
+    ---------------------------------------------------------- */
+    .cell-headline h2 {
+      font-family: var(--font-heading);
+      font-size: clamp(2.2rem, 4vw, 3.8rem);
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      line-height: 1.05;
+      margin-bottom: 1.25rem;
+      max-width: 720px;
+      text-transform: uppercase;
+      color: #111111; /* Dark on glass — high contrast */
+    }
+
+    .cell-headline .context {
+      font-size: 0.95rem;
+      color: #333333;
+      max-width: 560px;
+      line-height: 1.75;
+      font-weight: 400;
+    }
+
+    /* Source links: orange */
+    .source-links {
+      margin-top: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .source-links a {
+      font-size: 0.72rem;
+      color: var(--color-accent);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+      opacity: 0.9;
+      transition: opacity 0.2s;
+    }
+
+    .source-links a:hover { opacity: 1; text-decoration: underline; }
+
+    .source-links-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #777;
+      margin-bottom: 0.25rem;
+    }
+
+    /* ----------------------------------------------------------
+       DEEP DIVE CELL
+       Changed: dark headings and body text on glass
+    ---------------------------------------------------------- */
+    .cell-deepdive {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3.5rem;
+      align-items: start;
+      max-width: 1100px;
+    }
+
+    .cell-deepdive h2 {
+      font-family: var(--font-heading);
+      font-size: clamp(1.8rem, 3.2vw, 2.8rem);
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      line-height: 1.05;
+      margin-bottom: 1.25rem;
+      text-transform: uppercase;
+      color: #111111; /* Dark on glass */
+    }
+
+    .cell-deepdive .narrative {
+      font-size: 0.92rem;
+      line-height: 1.8;
+      color: #333333;
+      font-weight: 400;
+    }
+
+    .cell-deepdive .narrative p { margin-bottom: 1rem; }
+
+    /* ----------------------------------------------------------
+       MEDIA SLOT
+       Changed: lighter frosted glass — a window on the gradient
+    ---------------------------------------------------------- */
+    .media-slot {
+      background: rgba(255, 255, 255, 0.35);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1.5px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10), var(--glass-inner);
+      border-radius: 0.75rem;
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: rgba(0,0,0,0.35); /* Dark muted placeholder text */
+      font-size: 0.8rem;
+      text-align: center;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Film perforation dots — subtle on glass */
+    .media-slot::before {
+      content: '◼  ◼  ◼  ◼  ◼  ◼  ◼  ◼';
+      position: absolute;
+      top: 0.4rem;
+      left: 0; right: 0;
+      text-align: center;
+      font-size: 0.5rem;
+      letter-spacing: 0.3em;
+      color: rgba(255, 82, 0, 0.25);
+    }
+
+    .media-slot p { max-width: 260px; line-height: 1.6; font-weight: 400; }
+
+    .media-slot img,
+    .media-slot video,
+    .media-slot iframe {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      border-radius: 0.5rem;
+    }
+
+    /* ----------------------------------------------------------
+       INTERVIEW QUOTE
+       Changed: orange left border, dark italic quote text
+    ---------------------------------------------------------- */
+    .interview-quote {
+      border-left: 3px solid var(--color-accent);
+      padding-left: 1.25rem;
+      margin-top: 1.75rem;
+      transition: border-color 0.4s ease;
+    }
+
+    .interview-quote blockquote {
+      font-size: 0.95rem;
+      font-style: italic;
+      line-height: 1.7;
+      color: #1a1a1a; /* Dark on glass */
+      font-weight: 400;
+    }
+
+    .interview-quote cite {
+      display: block;
+      margin-top: 0.6rem;
+      font-size: 0.75rem;
+      font-style: normal;
+      color: var(--color-accent);
+      letter-spacing: 0.05em;
+    }
+
+    /* ----------------------------------------------------------
+       CLOSING PANEL
+       Changed: transparent background, frosted glass card via ::before
+    ---------------------------------------------------------- */
+    .panel-closing {
+      min-width: 100vw;
+      height: 100vh;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 4rem;
+      position: relative;
+      background: transparent; /* Gradient visible */
+    }
+
+    /* Frosted glass card behind closing content */
+    .panel-closing::before {
+      content: '';
+      position: absolute;
+      inset: 2.5rem 3rem;
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-radius: 1.25rem;
+      border: 1.5px solid var(--glass-border);
+      box-shadow: var(--glass-shadow), var(--glass-inner);
+      z-index: 0;
+    }
+
+    /* Corner bracket decorations — orange, above glass card */
+    .panel-closing::after {
+      content: '';
+      position: absolute;
+      width: 50px; height: 50px;
+      border-color: rgba(255, 82, 0, 0.55);
+      border-style: solid;
+      bottom: 4rem; right: 4rem;
+      border-width: 0 2px 2px 0;
+      z-index: 2;
+    }
+
+    /* Closing h2: dark on glass, CN bold */
+    .panel-closing h2 {
+      font-family: var(--font-heading);
+      font-size: clamp(2.5rem, 5vw, 5rem);
+      font-weight: 900;
+      letter-spacing: 0.07em;
+      margin-bottom: 1.5rem;
+      max-width: 800px;
+      line-height: 1.05;
+      text-transform: uppercase;
+      color: #111111;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Orange accent span */
+    .panel-closing h2 span { color: var(--color-accent); }
+
+    .panel-closing .closing-text {
+      font-size: 1rem;
+      color: #333333;
+      max-width: 520px;
+      line-height: 1.8;
+      font-weight: 400;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ----------------------------------------------------------
+       NAV DOTS
+       Changed: semi-transparent dark dots, orange active dot
+    ---------------------------------------------------------- */
+    .nav-dots {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 0.75rem;
+      z-index: 100;
+    }
+
+    .nav-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.18);
+      border: 1px solid rgba(255,255,255,0.5);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    /* Active dot: orange */
+    .nav-dot.active { background: var(--color-accent); border-color: var(--color-accent); transform: scale(1.4); }
+
+    /* ----------------------------------------------------------
+       INTERVIEW SECTION
+       Changed: transparent background — gradient shows through.
+       Each block has a frosted glass card via ::before.
+    ---------------------------------------------------------- */
+    .interview-section {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: transparent; /* Gradient always visible */
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      z-index: 50;
+    }
+
+    .interview-section.active { display: block; }
+
+    /* Interview blocks: transparent, gradient visible at edges */
+    .interview-block {
+      min-height: 100vh;
+      scroll-snap-align: start;
+      display: flex;
+      align-items: center;
+      padding: 7rem 6rem 4rem;
+      position: relative;
+      background: transparent;
+    }
+
+    /* Frosted glass card behind each interview block */
+    .interview-block::before {
+      content: '';
+      position: absolute;
+      inset: 1.5rem 2rem;
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-radius: 1.25rem;
+      border: 1.5px solid var(--glass-border);
+      box-shadow: var(--glass-shadow), var(--glass-inner);
+      z-index: 0;
+    }
+
+    /* Lift interview content above glass card */
+    .interview-block > * { position: relative; z-index: 1; }
+
+    .interview-block + .interview-block { border-top: none; }
+
+    /* -- Person block -- */
+    .block-person .block-inner {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 3.5rem;
+      align-items: center;
+      max-width: 1000px;
+      width: 100%;
+    }
+
+    /* Photo slot: lighter glass within the glass panel */
+    .person-photo-slot {
+      background: rgba(255, 255, 255, 0.45);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1.5px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      border-radius: 0.75rem;
+      aspect-ratio: 3 / 4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: rgba(0, 0, 0, 0.35); /* Dark placeholder text */
+      font-size: 0.75rem;
+      text-align: center;
+      gap: 0.5rem;
+      padding: 1.5rem;
+    }
+
+    .person-photo-slot img { width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem; }
+
+    /* Person name: dark CN bold */
+    .person-info h3 {
+      font-family: var(--font-heading);
+      font-size: 2.6rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.35rem;
+      text-transform: uppercase;
+      color: #111111;
+    }
+
+    /* Role: orange */
+    .person-info .person-role {
+      font-size: 0.8rem;
+      color: var(--color-accent);
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .person-info .person-bio {
+      font-size: 0.95rem;
+      line-height: 1.8;
+      color: #333333;
+      max-width: 540px;
+      font-weight: 400;
+    }
+
+    /* -- Video block -- */
+    .block-video .block-inner {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 3rem;
+      align-items: center;
+      max-width: 1000px;
+      width: 100%;
+    }
+
+    /* Video slot: glass within glass */
+    .video-slot {
+      background: rgba(255, 255, 255, 0.40);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1.5px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      border-radius: 0.75rem;
+      aspect-ratio: 16 / 9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: rgba(0,0,0,0.35);
+      font-size: 0.8rem;
+      text-align: center;
+      gap: 0.75rem;
+      padding: 1.5rem;
+    }
+
+    .video-slot iframe,
+    .video-slot video { width: 100%; height: 100%; border-radius: 0.5rem; border: none; }
+
+    /* Video title: dark CN bold */
+    .video-info h3 {
+      font-family: var(--font-heading);
+      font-size: 1.8rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.75rem;
+      text-transform: uppercase;
+      color: #111111;
+    }
+
+    .video-info .video-description {
+      font-size: 0.9rem;
+      line-height: 1.75;
+      color: #333333;
+      font-weight: 400;
+    }
+
+    /* -- Pullquote block -- */
+    .block-pullquote .block-inner { max-width: 820px; width: 100%; }
+
+    /* Giant pullquote: dark CN bold poster typography, orange left border */
+    .block-pullquote blockquote {
+      font-family: var(--font-heading);
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      border-left: 5px solid var(--color-accent);
+      padding-left: 1.75rem;
+      text-transform: uppercase;
+      color: #111111; /* Dark on glass — maximum contrast */
+    }
+
+    .block-pullquote cite {
+      font-size: 0.8rem;
+      font-style: normal;
+      color: var(--color-accent);
+      padding-left: 2rem;
+      display: block;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* Slot label */
+    .slot-label {
+      font-family: var(--font-body);
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(0,0,0,0.35);
+      margin-bottom: 0.25rem;
+    }
+
+    /* ----------------------------------------------------------
+       RESPONSIVE
+    ---------------------------------------------------------- */
+    @media (max-width: 768px) {
+      header { padding: 1rem 1.5rem; flex-direction: column; gap: 0.75rem; }
+      .panel-year { padding: 5rem 2rem 3rem; }
+      .cell-deepdive { grid-template-columns: 1fr; }
+      .interview-block { padding: 6rem 2rem 3rem; }
+      .block-person .block-inner,
+      .block-video .block-inner { grid-template-columns: 1fr; }
+      .panel-intro::before,
+      .panel-intro::after { display: none; }
+      /* Team cards stack vertically on mobile */
+      .team-cards { flex-direction: column; align-items: center; }
+      .team-card { width: 100%; max-width: 320px; }
+    }
+
+    /* ----------------------------------------------------------
+       HEADER SPACING — added
+       Push content down so nothing sits directly under the header bar.
+    ---------------------------------------------------------- */
+
+    /* Intro: breathing room below the fixed header */
+    .panel-intro {
+      padding-top: 5rem;
+    }
+
+    /* Year panels: glass card starts lower so it clears the header shadow */
+    .panel-year {
+      padding-top: 7rem;
+    }
+
+    .panel-year::before {
+      top: 4rem; /* Was 2.5rem — pushed down to clear header zone */
+    }
+
+    /* Closing panel: same clearance */
+    .panel-closing {
+      padding-top: 5rem;
+    }
+
+    .panel-closing::before {
+      top: 4rem;
+    }
+
+    /* ----------------------------------------------------------
+       INTRO PANEL — no glass container
+       Text sits directly on the gradient.
+       .intro-card HTML div removed; these rules neutralise any fallback.
+    ---------------------------------------------------------- */
+
+    .intro-card {
+      background: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      border-radius: 0 !important;
+    }
+
+    /* Intro heading: dark text on bright gradient, soft white halo for legibility */
+    .panel-intro h1 {
+      color: #111111;
+      text-shadow: 0 2px 24px rgba(255,255,255,0.7), 0 0 60px rgba(255,255,255,0.4);
+    }
+
+    /* Subtitle: dark, readable on gradient */
+    .panel-intro .subtitle {
+      color: #1a1a1a;
+      text-shadow: 0 1px 10px rgba(255,255,255,0.6);
+    }
+
+    /* ----------------------------------------------------------
+       TEAM SECTION — profile cards
+       Three cards in a row on desktop, stacked on mobile.
+       Uses same glass style as all other containers.
+    ---------------------------------------------------------- */
+
+    /* Row of three cards, centered */
+    .team-cards {
+      display: flex;
+      flex-direction: row;
+      gap: 2rem;
+      justify-content: center;
+      align-items: flex-start;
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    /* Individual card: frosted glass matching other panels */
+    .team-card {
+      flex: 1;
+      max-width: 260px;
+      background: rgba(255, 255, 255, 0.55);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1.5px solid rgba(255, 255, 255, 0.65);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.8);
+      border-radius: 1rem;
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      text-align: center;
+    }
+
+    /* Square photo placeholder */
+    .team-photo-placeholder {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: rgba(255, 255, 255, 0.4);
+      border: 1.5px dashed rgba(255, 82, 0, 0.4);
+      border-radius: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(0,0,0,0.3);
+      font-size: 0.72rem;
+    }
+
+    /* Name: bold CN condensed, dark */
+    .team-name {
+      font-family: var(--font-heading);
+      font-size: 1.8rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #111111;
+      margin: 0;
+      line-height: 1;
+    }
+
+    /* Role: orange, all-caps small text */
+    .team-role {
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--color-accent);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    .team-card-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================
+       SCENARIO BACKGROUND OVERLAYS
+       ============================================ -->
+  <div class="bg-tinge" data-scenario="optimistic"></div>
+  <div class="bg-tinge active" data-scenario="likely"></div>
+  <div class="bg-tinge" data-scenario="pessimistic"></div>
+
+
+  <!-- ============================================
+       HEADER
+       CHANGED: Updated title, team names, same JS hooks preserved
+       ============================================ -->
+  <header>
+    <div>
+      <!-- CHANGED: Topic updated to AI in Animation -->
+      <div class="project-title">What's Next? — AI in Animation</div>
+      <div class="team-names">Jappan · Tyler · Yuri · BCIT · 2025</div>
+    </div>
+    <div class="header-right">
+      <!-- Scenario toggle — JS hooks unchanged -->
+      <div class="toggle-group" id="scenarioToggle">
+        <button class="toggle-btn" data-scenario="optimistic">Optimistic</button>
+        <button class="toggle-btn active" data-scenario="likely">Most Likely</button>
+        <button class="toggle-btn" data-scenario="pessimistic">Pessimistic</button>
+      </div>
+      <!-- View toggle — JS hooks unchanged -->
+      <div class="view-toggle">
+        <button class="view-btn active" data-view="timeline" aria-label="Timeline">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <circle cx="6"  cy="12" r="2.5" fill="currentColor" stroke="none"/>
+            <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/>
+            <circle cx="18" cy="12" r="2.5" fill="currentColor" stroke="none"/>
+          </svg>
+        </button>
+        <button class="view-btn" data-view="interview" aria-label="Interview">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+
+  <!-- ============================================
+       TIMELINE — Horizontal scroll, JS unchanged
+       ============================================ -->
+  <div class="timeline" id="timeline">
+
+    <!-- ---- INTRO PANEL ---- -->
+    <!-- UPDATED: No glass container on intro — text sits directly on gradient -->
+    <section class="panel-intro" data-panel="0">
+      <h1>AI &amp; the Future of<br><span>Animation</span></h1>
+      <div class="intro-rule"></div>
+      <p class="subtitle">
+        How artificial intelligence is reshaping storytelling, production pipelines,
+        and creative jobs in the animation industry — from 2027 to 2036.
+      </p>
+      <div class="scroll-hint">Scroll to explore</div>
+    </section>
+
+
+    <!-- ============================================
+         TEAM SECTION — added after intro
+         Panel index: 1
+         ============================================ -->
+    <section class="panel-year panel-team" data-panel="1">
+      <div class="year-label" style="font-size: clamp(5rem, 12vw, 10rem); opacity: 0.04;">Team</div>
+      <div class="year-header">Our Team</div>
+
+      <div class="team-cards">
+
+        <!-- Card: Jappan -->
+        <div class="team-card">
+          <div class="team-photo-placeholder">
+            <span class="slot-label">Photo</span>
+          </div>
+          <div class="team-card-info">
+            <h3 class="team-name">Jappan</h3>
+            <p class="team-role">Researcher</p>
+          </div>
+        </div>
+
+        <!-- Card: Tyler -->
+        <div class="team-card">
+          <div class="team-photo-placeholder">
+            <span class="slot-label">Photo</span>
+          </div>
+          <div class="team-card-info">
+            <h3 class="team-name">Tyler</h3>
+            <p class="team-role">Researcher</p>
+          </div>
+        </div>
+
+        <!-- Card: Yuri -->
+        <div class="team-card">
+          <div class="team-photo-placeholder">
+            <span class="slot-label">Photo</span>
+          </div>
+          <div class="team-card-info">
+            <h3 class="team-name">Yuri</h3>
+            <p class="team-role">Interview Coordinator<br>Website Development<br>Design</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ============================================
+         2027
+         Structure: Optimistic = headline, Most Likely = deep dive, Pessimistic = headline
+         Content from PDF brief
+         ============================================ -->
+    <section class="panel-year" data-panel="2">
+      <div class="year-label">2027</div>
+      <div class="year-header">2027</div>
+
+      <!-- OPTIMISTIC — Headline only -->
+      <!-- CHANGED: Content from PDF "Optimistic 2027" column -->
+      <div class="scenario-content" data-scenario="optimistic">
+        <div class="cell-headline">
+          <h2>AI as a Creative Assistant — Human Storytelling Leads</h2>
+          <p class="context">
+            AI assists with pre-visualization, temporary voice lines, and fast editing experiments —
+            freeing directors to test ideas faster without replacing the artists who bring them to life.
+            Human creativity and storytelling still drive every project.
+          </p>
+        </div>
+      </div>
+
+      <!-- MOST LIKELY — Deep dive with Justin quote + media slot -->
+      <!-- CHANGED: Full content + Justin Marmulk quote from PDF -->
+      <div class="scenario-content active" data-scenario="likely">
+        <div class="cell-deepdive">
+          <div>
+            <h2>AI Actively Improves Speed &amp; Production Pipelines</h2>
+            <div class="narrative">
+              <p>
+                By 2027, AI-driven tools are already embedded across animation workflows —
+                accelerating pre-visualization, automating repetitive rendering passes,
+                and compressing production timelines without eliminating creative roles.
+              </p>
+              <p>
+                Studios are experimenting cautiously: AI handles the scaffolding,
+                humans define the vision. Production coordinators and directors
+                report faster iteration but no wholesale replacement of artists yet.
+              </p>
+            </div>
+            <!-- CHANGED: Justin Marmulk quote on pre-viz use -->
+            <div class="interview-quote">
+              <blockquote>"I could see some things in animation where it would be pretty useful for pre-visualization… where the point is to have something blocked out in 3D really quickly. I've seen people use AI-generated audio where you just type it out and it gives you a file of somebody speaking. Things like that could help mitigate the speed at which you're visualizing stuff."</blockquote>
+              <cite>— Justin Marmulk, Production Coordinator · Netflix Animation</cite>
+            </div>
+          </div>
+          <!-- MEDIA SLOT: Replace <p> with an <img> or <iframe> embed -->
+          <div class="media-slot">
+            <p>
+              Media slot<br><br>
+              Add an image, chart, or video clip here.<br><br>
+              Suggested: screenshot of an AI pre-viz tool in action, or embed your interview clip.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PESSIMISTIC — Headline only -->
+      <!-- CHANGED: Content from PDF "Pessimistic 2027" column -->
+      <div class="scenario-content" data-scenario="pessimistic">
+        <div class="cell-headline">
+          <h2>AI Isn't Ready — But Studios Use It to Cut Costs Anyway</h2>
+          <p class="context">
+            Studios begin deploying AI primarily as a cost-cutting measure, reducing entry-level animation jobs
+            before the tools are mature enough to maintain quality. Younger creators risk becoming
+            over-reliant on AI, weakening foundational animation skills.
+          </p>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============================================
+         2031
+         Structure: Optimistic = deep dive, Most Likely = headline, Pessimistic = headline
+         ============================================ -->
+    <section class="panel-year" data-panel="3">
+      <div class="year-label">2031</div>
+      <div class="year-header">2031</div>
+
+      <!-- OPTIMISTIC — Deep dive with Justin quote + media slot -->
+      <!-- CHANGED: Content from PDF "Optimistic 2031" column -->
+      <div class="scenario-content" data-scenario="optimistic">
+        <div class="cell-deepdive">
+          <div>
+            <h2>AI Supports Creative Decisions — Faster Workflows, Human Direction</h2>
+            <div class="narrative">
+              <p>
+                AI becomes a powerful analytical partner: filmmakers use it to evaluate scripts,
+                suggest cinematography styles, and simulate audience reactions before a single frame
+                is rendered. Creative directors remain firmly in charge.
+              </p>
+              <p>
+                Animation teams work faster and with greater confidence — AI handles the hours of
+                repetitive rendering and tweaking that once consumed human energy and budget.
+              </p>
+            </div>
+            <!-- CHANGED: Justin Marmulk quote on rendering automation -->
+            <div class="interview-quote">
+              <blockquote>"I think that will definitely have an impact for action movies or sci-fi things… if you're still giving a creative direction, but it's the actual hours of repetitive tasks of rendering and seeing what it looks like, and then tweaking and rendering — that all takes time and human hours. I can see stuff like that kind of being washed away."</blockquote>
+              <cite>— Justin Marmulk, Production Coordinator · Netflix Animation</cite>
+            </div>
+          </div>
+          <!-- MEDIA SLOT: Suggested — AI-driven workflow diagram or studio pipeline chart -->
+          <div class="media-slot">
+            <p>
+              Media slot<br><br>
+              Add a workflow diagram, chart, or video here.<br><br>
+              Suggested: Cartoon Brew / Luminate 2025 animation jobs report visual.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- MOST LIKELY — Headline with source links -->
+      <!-- CHANGED: Content from PDF "Most Likely 2031" + sources -->
+      <div class="scenario-content active" data-scenario="likely">
+        <div class="cell-headline">
+          <h2>AI-Driven Workflows Become the Norm Across Animation Studios</h2>
+          <p class="context">
+            By 2031, most mid-to-large animation studios have standardized on AI-assisted pipelines
+            for rendering, compositing, and scheduling. The question is no longer whether to adopt AI —
+            it's how to maintain creative authenticity while doing so.
+          </p>
+          <!-- ADDED: Source links from PDF brief -->
+          <div class="source-links">
+            <div class="source-links-label">Sources</div>
+            <a href="https://www.cartoonbrew.com/tech/animation-jobs-in-the-age-of-ai-revelations-from-luminate-intelligences-2025-special-report-253718.html" target="_blank" rel="noopener">
+              Cartoon Brew — Animation Jobs in the Age of AI: Luminate 2025 Report ↗
+            </a>
+            <a href="https://smokingchimneystudios.com/ai-transforming-cgi-animation-workflows/" target="_blank" rel="noopener">
+              Smoking Chimney Studios — AI Transforming CGI Animation Workflows ↗
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- PESSIMISTIC — Headline only -->
+      <!-- CHANGED: Content from PDF "Pessimistic 2031" column -->
+      <div class="scenario-content" data-scenario="pessimistic">
+        <div class="cell-headline">
+          <h2>AI Begins Influencing Creative Control — Artistic Risk-Taking Declines</h2>
+          <p class="context">
+            Studios automate increasing portions of the pipeline, reducing technical roles in rendering,
+            editing, and scheduling. Creative decisions begin deferring to data-driven AI suggestions,
+            narrowing the scope for bold artistic choices and unconventional storytelling.
+          </p>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============================================
+         2036
+         Structure: Optimistic = headline, Most Likely = headline + sources, Pessimistic = deep dive
+         ============================================ -->
+    <section class="panel-year" data-panel="4">
+      <div class="year-label">2036</div>
+      <div class="year-header">2036</div>
+
+      <!-- OPTIMISTIC — Headline only -->
+      <!-- CHANGED: Content from PDF "Optimistic 2036" column -->
+      <div class="scenario-content" data-scenario="optimistic">
+        <div class="cell-headline">
+          <h2>AI Accelerates the Pipeline — Independent Filmmakers Rise</h2>
+          <p class="context">
+            AI dramatically speeds up rendering, VFX, and scene visualization. Independent creators
+            gain access to studio-quality tools with small teams, democratizing high-quality animation.
+            But audiences increasingly seek hand-crafted work that reflects human perspective and identity.
+          </p>
+          <!-- CHANGED: Justin Marmulk quote on audience preference for human art -->
+          <div class="interview-quote" style="margin-top:1.5rem;">
+            <blockquote>"I firmly believe that when we see Disney and other studios in 10 years making AI-driven movies, versus people on YouTube making hand-drawn animation — people are going to prefer the other. People want to see themselves in the art."</blockquote>
+            <cite>— Justin Marmulk, Production Coordinator · Netflix Animation</cite>
+          </div>
+        </div>
+      </div>
+
+      <!-- MOST LIKELY — Headline with source links -->
+      <!-- CHANGED: Content from PDF "Most Likely 2036" + sources -->
+      <div class="scenario-content active" data-scenario="likely">
+        <div class="cell-headline">
+          <h2>Generative AI in Animation Surges Toward a $100B+ Market</h2>
+          <p class="context">
+            The global market for generative AI in animation and motion graphics explodes past $100 billion.
+            Studios that invested early in human-AI hybrid workflows lead the industry —
+            while those that resisted face rapid obsolescence. The tools are industry-standard;
+            the competitive edge now belongs to the most creatively ambitious humans.
+          </p>
+          <div class="source-links">
+            <div class="source-links-label">Sources</div>
+            <a href="https://vitrina.ai/blog/ai-film-animation-documentary-2024-2027/" target="_blank" rel="noopener">
+              Vitrina AI — AI in Film, Animation &amp; Documentary 2024–2027 ↗
+            </a>
+            <a href="https://web.superagi.com/future-of-motion-graphics-how-ai-is-revolutionizing-animation-and-visual-effects-in-2025/" target="_blank" rel="noopener">
+              SuperAGI — Future of Motion Graphics: AI in Animation &amp; VFX 2025 ↗
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- PESSIMISTIC — Deep dive -->
+      <!-- CHANGED: Content from PDF "Pessimistic 2036" column + Justin counter-quote -->
+      <div class="scenario-content" data-scenario="pessimistic">
+        <div class="cell-deepdive">
+          <div>
+            <h2>Automation Hollows Out the Technical Pipeline — Studios Consolidate Power</h2>
+            <div class="narrative">
+              <p>
+                Major studios control the most powerful proprietary AI tools, concentrating creative
+                and economic power into a handful of corporations. Most technical pipeline roles —
+                lighting, rendering, compositing, scheduling — have been automated away.
+              </p>
+              <p>
+                The industry produces films optimized for AI efficiency metrics rather than emotional
+                resonance. Audiences sense something missing: the films are technically flawless
+                but feel hollow. A cultural backlash builds around authenticity and human craft.
+              </p>
+            </div>
+            <!-- CHANGED: Justin's quote recontextualized as a warning in the pessimistic scenario -->
+            <div class="interview-quote">
+              <blockquote>"People are going to prefer the other. People want to see themselves in the art."</blockquote>
+              <cite>— Justin Marmulk, Production Coordinator · Netflix Animation<br>
+              <span style="opacity:0.5; font-style:italic;">In the pessimistic scenario, studios ignore this — and audiences eventually respond.</span></cite>
+            </div>
+          </div>
+          <!-- MEDIA SLOT: Suggested — job loss chart or consolidation graphic -->
+          <div class="media-slot">
+            <p>
+              Media slot<br><br>
+              Add a chart or article screenshot here.<br><br>
+              Suggested: Animation job loss projections or big-studio market share data.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ---- CLOSING PANEL ---- -->
+    <!-- CHANGED: Closing with provocation about human creativity vs AI efficiency -->
+    <section class="panel-closing" data-panel="5">
+      <h2>Will Audiences Choose <span>Efficiency</span> — or <span>Humanity?</span></h2>
+      <p class="closing-text">
+        The tools are coming regardless. The real question for animators, studios, and audiences is
+        whether we build a future where AI amplifies human creativity — or quietly replaces it.
+        The answer may already be in how we respond today.
+      </p>
+    </section>
+
+  </div>
+
+
+  <!-- ============================================
+       INTERVIEW SECTION
+       CHANGED: Fully populated with Justin Marmulk content
+       ============================================ -->
+  <section class="interview-section" id="interviewSection">
+
+    <!-- Person overview -->
+    <div class="interview-block block-person">
+      <div class="block-inner">
+        <!-- CHANGED: Photo slot ready for a real image — replace <p> with <img src="..."> -->
+        <div class="person-photo-slot">
+          <div class="slot-label">Photo</div>
+          <p>Add a photo of Justin here.<br><br>
+          Replace this block with:<br>
+          <code style="font-size:0.65rem; opacity:0.6;">&lt;img src="justin.jpg" alt="Justin Marmulk"&gt;</code></p>
+        </div>
+        <div class="person-info">
+          <!-- CHANGED: Justin Marmulk's actual details -->
+          <h3>Justin Marmulk</h3>
+          <p class="person-role">Production Coordinator · Netflix Animation</p>
+          <p class="person-bio">
+            Justin Marmulk works as a Production Coordinator at Netflix Animation,
+            where he helps manage the day-to-day logistics of animated film and series production.
+            With a front-row seat to how AI tools are being trialled in real studio pipelines,
+            Justin brings a grounded, practitioner perspective to the debate around automation
+            and creativity in animation — one that balances genuine excitement about efficiency
+            gains with a deep belief in the irreplaceable value of human storytelling.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Video clip -->
+    <div class="interview-block block-video">
+      <div class="block-inner">
+        <!-- CHANGED: Video slot ready for iframe/video embed -->
+        <div class="video-slot">
+          <div class="slot-label">Interview Clip</div>
+          <p>Embed your interview video here.<br><br>
+          Replace this block with:<br>
+          <code style="font-size:0.65rem; opacity:0.6;">&lt;iframe src="your-video-url"&gt;&lt;/iframe&gt;</code><br><br>
+          Works with YouTube, Vimeo, or a direct &lt;video&gt; file.</p>
+        </div>
+        <div class="video-info">
+          <h3>Justin on AI &amp; the Future of Animation</h3>
+          <p class="video-description">
+            In this interview, Justin reflects on how AI tools are already influencing
+            production timelines at Netflix Animation — from pre-visualization to rendering —
+            and shares his prediction that audiences will ultimately gravitate toward
+            animation made with genuine human vision, even as AI-generated content scales.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pullquote -->
+    <!-- CHANGED: Justin's most memorable quote becomes the editorial pull-quote -->
+    <div class="interview-block block-pullquote">
+      <div class="block-inner">
+        <blockquote>"People are going to prefer the other. People want to see themselves in the art."</blockquote>
+        <cite>— Justin Marmulk, Production Coordinator · Netflix Animation</cite>
+      </div>
+    </div>
+
+  </section>
+
+
+  <!-- ============================================
+       NAV DOTS — JS hooks unchanged
+       ============================================ -->
+  <nav class="nav-dots" id="navDots">
+    <button class="nav-dot active" data-panel="0"></button>
+    <button class="nav-dot" data-panel="1"></button>
+    <button class="nav-dot" data-panel="2"></button>
+    <button class="nav-dot" data-panel="3"></button>
+    <button class="nav-dot" data-panel="4"></button>
+    <button class="nav-dot" data-panel="5"></button>
+  </nav>
+
+
+  <script>
+    // ==========================================================
+    // SCENARIO TOGGLE — unchanged from template
+    // Switches visible content and background tinge across all panels.
+    // ==========================================================
+
+    const root = document.documentElement;
+    const toggleBtns = document.querySelectorAll('.toggle-btn');
+    const bgTinges = document.querySelectorAll('.bg-tinge');
+    const scenarioColors = {
+      optimistic: '#00c48c',
+      likely: '#4a9eff',
+      pessimistic: '#e05f5f'
+    };
+
+    let currentScenario = 'likely';
+
+    toggleBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const scenario = btn.dataset.scenario;
+        if (scenario === currentScenario) return;
+        currentScenario = scenario;
+
+        toggleBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        root.style.setProperty('--color-active', scenarioColors[scenario]);
+
+        bgTinges.forEach(el => {
+          el.classList.toggle('active', el.dataset.scenario === scenario);
+        });
+
+        document.querySelectorAll('.scenario-content').forEach(el => {
+          el.classList.remove('active');
+        });
+        document.querySelectorAll(`.scenario-content[data-scenario="${scenario}"]`).forEach(el => {
+          el.classList.add('active');
+        });
+      });
+    });
+
+
+    // ==========================================================
+    // NAV DOTS — unchanged from template
+    // ==========================================================
+
+    const timeline = document.getElementById('timeline');
+    const navDots = document.querySelectorAll('.nav-dot');
+    const panels = document.querySelectorAll('[data-panel]');
+    const totalPanels = panels.length;
+    let currentPanel = 0;
+
+    function setActivePanel(index) {
+      currentPanel = Math.max(0, Math.min(totalPanels - 1, index));
+      navDots.forEach(dot => {
+        dot.classList.toggle('active', parseInt(dot.dataset.panel) === currentPanel);
+      });
+    }
+
+    navDots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        const panelIndex = parseInt(dot.dataset.panel);
+        const target = document.querySelector(`[data-panel="${panelIndex}"]`);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', inline: 'start' });
+          setActivePanel(panelIndex);
+        }
+      });
+    });
+
+    let scrollTimeout;
+    timeline.addEventListener('scroll', () => {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        const activeIndex = Math.round(timeline.scrollLeft / window.innerWidth);
+        setActivePanel(activeIndex);
+      }, 50);
+    });
+
+
+    // ==========================================================
+    // KEYBOARD NAV — unchanged from template
+    // ==========================================================
+
+    document.addEventListener('keydown', (e) => {
+      if (currentView === 'timeline') {
+        if (e.key === 'ArrowRight' && currentPanel < totalPanels - 1) {
+          setActivePanel(currentPanel + 1);
+          timeline.scrollBy({ left: window.innerWidth, behavior: 'smooth' });
+        } else if (e.key === 'ArrowLeft' && currentPanel > 0) {
+          setActivePanel(currentPanel - 1);
+          timeline.scrollBy({ left: -window.innerWidth, behavior: 'smooth' });
+        }
+      }
+    });
+
+
+    // ==========================================================
+    // VIEW TOGGLE — unchanged from template
+    // ==========================================================
+
+    const viewBtns = document.querySelectorAll('.view-btn');
+    const interviewSection = document.getElementById('interviewSection');
+    const scenarioToggle = document.getElementById('scenarioToggle');
+    let currentView = 'timeline';
+
+    viewBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const view = btn.dataset.view;
+        if (view === currentView) return;
+        currentView = view;
+
+        viewBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        if (view === 'interview') {
+          interviewSection.classList.add('active');
+          scenarioToggle.classList.add('hidden');
+        } else {
+          interviewSection.classList.remove('active');
+          scenarioToggle.classList.remove('hidden');
+          interviewSection.scrollTop = 0;
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
