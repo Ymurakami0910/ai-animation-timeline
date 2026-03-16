@@ -1879,7 +1879,7 @@
     }
 
     /* ==========================================================
-       COMPREHENSIVE MOBILE RESPONSIVE — max-width: 768px
+       COMPREHENSIVE MOBILE RESPONSIVE — max-width: 900px
        UX principles applied:
        - No hover interactions relied on (tap-friendly replacements)
        - Split panes stack vertically (content first, media second)
@@ -1890,12 +1890,12 @@
        - iframe previews show badge always (no hover needed)
        - Closing reveal always visible (no hover)
     ========================================================== */
-    @media (max-width: 768px) {
+    @media (max-width: 900px) {
 
       /* ---- ROOT / GLOBAL ---- */
-      :root { --header-h: 120px; }
+      :root { --header-h: 120px; } /* fallback — overridden by JS below */
 
-      html, body { overflow: hidden; }
+      html, body { overflow-x: hidden; overflow-y: auto; }
 
       /* ---- HEADER ---- */
       header {
@@ -1915,8 +1915,12 @@
 
       .toggle-btn { font-size: 0.68rem; padding: 0.45rem 0.85rem; }
 
-      /* ---- NAV ARROWS — hide on mobile, swipe handles navigation ---- */
-      .nav-arrow { display: none; }
+      /* ---- NAV ARROWS — keep visible on mobile, JS handles first/last hiding ---- */
+      .nav-arrow {
+        width: 2.25rem;   /* slightly smaller for mobile */
+        height: 2.25rem;
+        font-size: 0.95rem;
+      }
 
       /* ---- NAV DOTS ---- */
       .nav-dots { bottom: 1rem; gap: 0.5rem; }
@@ -1931,42 +1935,81 @@
       .panel-intro .subtitle { font-size: 0.85rem; }
       .scroll-hint { font-size: 0.62rem; bottom: 2.5rem; }
 
-      /* ---- YEAR PANELS ---- */
+      /* ---- YEAR PANELS — expand to content on mobile ---- */
       .panel-year {
-        padding: calc(var(--header-h) + 0.75rem) 1.25rem 1.25rem;
-      }
-
-      .panel-year::before {
-        inset: calc(var(--header-h) - 0.25rem) 0.75rem 0.75rem;
-      }
-
-      .year-header {
-        font-size: 1.3rem;
-        margin-bottom: 1rem;
-        letter-spacing: 0.15em;
-      }
-
-      /* ---- SPLIT PANE — stack vertically on mobile ---- */
-      .scenario-content.active {
-        flex-direction: column !important;
-        overflow-y: auto;
+        /* Natural height — grows with content, minimum is full screen */
+        min-height: 100vh;
+        height: auto !important;
+        /* Padding: top clears fixed header, sides clear nothing (arrows hidden) */
+        padding: calc(var(--header-h) + 1.5rem) 1.25rem 2.5rem !important;
+        overflow-y: visible !important;
         overflow-x: hidden;
-        gap: 0.75rem;
+        justify-content: flex-start !important; /* year-header always at same top position */
+        display: flex;
+        flex-direction: column;
       }
 
+      /* Hide the absolute ::before glass card — replace with in-flow wrapper below */
+      .panel-year::before {
+        display: none !important;
+      }
+
+      /* In-flow glass card that wraps year-header + scenario-content */
+      .year-header {
+        background: var(--glass-bg);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1.5px solid var(--glass-border);
+        box-shadow: var(--glass-shadow), var(--glass-inner);
+        border-radius: 1.25rem 1.25rem 0 0;
+        padding: 1rem 1.25rem 0.75rem;
+        margin: 0;
+        font-size: 1.3rem;
+        letter-spacing: 0.15em;
+        position: relative;
+        z-index: 2;
+        flex-shrink: 0;
+      }
+
+      /* Remove the ::after rule on year-header (the orange underline bar) */
+      .year-header::after {
+        display: none;
+      }
+
+      /* scenario-content: in-flow glass card body, expands freely */
+      .scenario-content.active {
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: visible !important;
+        height: auto !important;
+        min-height: unset !important;
+        background: var(--glass-bg);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1.5px solid var(--glass-border);
+        border-top: none; /* joins seamlessly with year-header */
+        box-shadow: var(--glass-shadow), var(--glass-inner);
+        border-radius: 0 0 1.25rem 1.25rem;
+        padding: 1rem 1.25rem 1.5rem;
+        position: relative;
+        z-index: 2;
+        gap: 1rem;
+      }
+
+      /* ---- PANE CONTENT — natural flow ---- */
       .pane-content {
         width: 100%;
         flex: none;
         padding-right: 0;
-        min-height: 0;
+        min-height: unset;
       }
 
       .pane-content-header { margin-bottom: 0.5rem; }
 
-      /* Content body: auto height on mobile (no fixed scroll container needed) */
       .pane-content-body {
-        overflow-y: visible;
+        overflow: visible !important;
         flex: none;
+        height: auto;
         padding-right: 0;
       }
 
@@ -1984,6 +2027,12 @@
         padding-top: 0.75rem;
         height: auto;
         position: static;
+      }
+
+      /* Year label watermark — keep it but reposition */
+      .year-label {
+        position: absolute;
+        z-index: 1;
       }
 
       /* ---- IFRAME PREVIEW — always show badge (no hover on mobile) ---- */
@@ -2029,83 +2078,163 @@
       .media-link-title { font-size: 1.1rem; }
       .media-link-desc { font-size: 0.75rem; }
 
-      /* ---- TOUCH SCROLLING — vertical swipe works inside content areas ---- */
-
-      /* Panels themselves: horizontal swipe only (timeline handles this) */
-      .panel-year, .panel-closing, .panel-intro {
-        touch-action: pan-x;
+      /* Timeline on mobile — allow panels to be taller than viewport */
+      .timeline {
+        overflow-y: visible;
+        height: auto;
+        min-height: 100vh;
+        flex-wrap: nowrap;
+        align-items: flex-start;
       }
 
-      /* Scrollable content areas: claim vertical swipe */
-      .scenario-content.active,
-      .pane-content-body,
-      .closing-text-col,
-      .closing-body,
-      .panel-team {
+      /* Timeline: horizontal swipe only */
+      .timeline { touch-action: pan-x; }
+
+      /* Panels: allow vertical scroll inside them */
+      .panel-year {
+        overflow-y: auto !important;
+        overflow-x: hidden;
         touch-action: pan-y;
         -webkit-overflow-scrolling: touch;
       }
 
-      /* Team cards list */
-      .team-cards {
+      /* scenario-content: stack vertically, full natural height, no overflow clip */
+      .scenario-content.active {
+        overflow: visible !important;
+        height: auto !important;
+        min-height: unset;
+        flex-direction: column !important;
         touch-action: pan-y;
       }
+
+      /* pane-content-body: natural height, no internal scroll — panel handles it */
+      .pane-content-body {
+        overflow-y: visible !important;
+        flex: none;
+        height: auto;
+        touch-action: pan-y;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* closing panel — same in-flow approach as year panels */
+      .panel-closing {
+        min-height: 100vh;
+        height: auto !important;
+        padding: calc(var(--header-h) + 1.5rem) 1.25rem 2.5rem !important;
+        overflow-y: visible !important;
+        overflow-x: hidden;
+        touch-action: pan-y;
+        -webkit-overflow-scrolling: touch;
+        align-items: flex-start;
+        text-align: left;
+        justify-content: flex-start !important;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .panel-closing::before { display: none !important; }
+      .panel-closing::after  { display: none; }
+
+      .panel-closing > h2 {
+        font-size: clamp(1.4rem, 5.5vw, 2.2rem);
+        margin-bottom: 0;            /* flush join — no gap before closing-body */
+        background: var(--glass-bg);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1.5px solid var(--glass-border);
+        box-shadow: var(--glass-shadow), var(--glass-inner);
+        border-radius: 1.25rem 1.25rem 0 0;
+        padding: 1rem 1.25rem 0.75rem;
+        width: 100%;
+        position: relative;
+        z-index: 2;
+      }
+
+      .closing-body {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+        overflow: visible !important;
+        height: auto !important;
+        min-height: unset;
+        gap: 1rem;
+        align-items: start;
+        background: var(--glass-bg);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1.5px solid var(--glass-border);
+        border-top: none;
+        box-shadow: var(--glass-shadow), var(--glass-inner);
+        border-radius: 0 0 1.25rem 1.25rem;
+        padding: 1rem 1.25rem 1.5rem;
+        width: 100%;
+        z-index: 2;
+        position: relative;
+      }
+
+      .closing-body,
+      .closing-text-col {
+        overflow: visible !important;
+        height: auto;
+        min-height: unset;
+        touch-action: pan-y;
+      }
+
+      /* Team panel */
+      .panel-team {
+        touch-action: pan-y;
+        -webkit-overflow-scrolling: touch;
+      }
+      .team-cards { touch-action: pan-y; }
 
       /* Interview section */
-      .interview-section {
-        touch-action: pan-y;
-      }
+      .interview-section { touch-action: pan-y; }
 
-      /* ---- TEAM PANEL — override panel-year overflow so cards aren't clipped ---- */
+      /* ---- TEAM PANEL — in-flow glass card matching other year panels ---- */
       .panel-team {
-        overflow-y: auto !important;  /* panel itself scrolls on mobile */
+        min-height: 100vh;
+        height: auto !important;
+        padding: calc(var(--header-h) + 1.5rem) 1.25rem 2.5rem !important;
+        overflow-y: visible !important;
         overflow-x: hidden;
-        padding-top: calc(var(--header-h) + 1.5rem);
-        padding-bottom: 4rem;
-        justify-content: flex-start; /* stack from top, not center */
+        justify-content: flex-start !important;
+        display: flex;
+        flex-direction: column;
+        touch-action: pan-y;
         -webkit-overflow-scrolling: touch;
       }
 
-      /* team-cards: normal flow, no fixed height, just stack and scroll */
+      /* team-cards: acts as the glass body — wraps cards in-flow */
       .panel-team .team-cards {
-        flex: none;
-        min-height: unset;
-        max-height: unset;
-        overflow: visible;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        overflow: visible !important;
         width: 100%;
-        padding-bottom: 1.5rem;
+        flex: none;
+        /* Glass bottom-half styles — joins with year-header glass top */
+        background: var(--glass-bg);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1.5px solid var(--glass-border);
+        border-top: none;
+        box-shadow: var(--glass-shadow), var(--glass-inner);
+        border-radius: 0 0 1.25rem 1.25rem;
+        padding: 1.25rem 1.25rem 2rem;
+        max-width: 100%;
       }
 
-      /* ---- TEAM CARDS — scrollable on mobile ---- */
+      /* ---- TEAM CARDS — stack, no scroll needed since panel is natural height ---- */
       .team-cards {
         flex-direction: column;
         align-items: center;
         gap: 1rem;
-        overflow-y: auto;          /* scrollable when cards exceed panel height */
-        overflow-x: hidden;
         width: 100%;
-        padding-bottom: 1rem;      /* breathing room at bottom */
-        scrollbar-width: none;     /* hide scrollbar — clean look */
-        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
       }
       .team-cards::-webkit-scrollbar { display: none; }
       .team-card { width: 100%; max-width: 280px; flex-shrink: 0; }
 
-      /* ---- CLOSING PANEL — fix header overlap ---- */
-      .panel-closing {
-        padding: calc(var(--header-h) + 2.5rem) 1.25rem 1.25rem; /* extra top space */
-        align-items: flex-start;
-        text-align: left;
-      }
-
-      .panel-closing::before {
-        inset: calc(var(--header-h) + 1rem) 0.75rem 0.75rem; /* glass card clears header */
-      }
-
-      .panel-closing > h2 {
-        font-size: clamp(1.4rem, 5.5vw, 2.2rem);
-        margin-bottom: 0.75rem;
-      }
+      /* ---- CLOSING PANEL body + video col ---- */
 
       .closing-body {
         grid-template-columns: 1fr;
@@ -2164,30 +2293,10 @@
       .fps-toggle-row { justify-content: center; }
       .fps-btn { font-size: 0.65rem; padding: 0.4rem 0.75rem; }
 
-      /* ---- ARROW MARGIN — glass card inset avoids nav arrow buttons ---- */
-      /* Add horizontal margin so content never hides behind the 44px arrow zones */
-      .panel-year::before {
-        inset: calc(var(--header-h) - 0.25rem) 0.75rem 0.75rem; /* already set above */
-      }
-
-      .panel-year {
-        padding: calc(var(--header-h) + 0.75rem) 3.5rem 1.25rem; /* 3.5rem = arrow width + gap */
-      }
-
-      .panel-closing {
-        padding-left: 3.5rem;
-        padding-right: 3.5rem;
-      }
-
-      .panel-closing::before {
-        left: 0.75rem;
-        right: 0.75rem;
-      }
-
       /* ---- INTERVIEW SECTION ---- */
-      .interview-block { padding: calc(var(--header-h) + 0.5rem) 1.25rem 1.5rem; }
+      .interview-block { padding: calc(var(--header-h) + 1.5rem) 1.25rem 1.5rem; }
 
-      .interview-block::before { inset: calc(var(--header-h) - 0.5rem) 0.5rem 0.5rem; }
+      .interview-block::before { inset: calc(var(--header-h) + 0.25rem) 0.5rem 0.5rem; }
 
       .block-person .block-inner,
       .block-video .block-inner { grid-template-columns: 1fr; gap: 1.5rem; }
@@ -3172,6 +3281,23 @@
 
   <script>
     // ==========================================================
+    // DYNAMIC HEADER HEIGHT — sets --header-h to actual rendered
+    // header height so all panel top padding is always correct.
+    // Critical on mobile where the header stacks into 3 rows.
+    // ==========================================================
+    function updateHeaderHeight() {
+      const h = document.querySelector('header').getBoundingClientRect().height;
+      document.documentElement.style.setProperty('--header-h', h + 'px');
+    }
+
+    updateHeaderHeight();
+    window.addEventListener('resize', updateHeaderHeight);
+    // Also run after fonts load (Barlow Condensed can shift header height)
+    if (document.fonts) {
+      document.fonts.ready.then(updateHeaderHeight);
+    }
+
+    // ==========================================================
     // SCENARIO TOGGLE — unchanged from template
     // Switches visible content and background tinge across all panels.
     // ADDED: body class swap for per-scenario background gradient
@@ -3259,9 +3385,12 @@
     timeline.addEventListener('scroll', () => {
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
-        const activeIndex = Math.round(timeline.scrollLeft / window.innerWidth);
+        // Use the first panel's offsetWidth for accuracy on mobile
+        // (window.innerWidth can differ from actual panel width when browser chrome resizes)
+        const panelWidth = timeline.querySelector('[data-panel]')?.offsetWidth || window.innerWidth;
+        const activeIndex = Math.round(timeline.scrollLeft / panelWidth);
         setActivePanel(activeIndex);
-      }, 50);
+      }, 80);
     });
 
 
@@ -3468,16 +3597,18 @@
 
     arrowLeft.addEventListener('click', () => {
       if (currentPanel > 0) {
+        const panelWidth = timeline.querySelector('[data-panel]')?.offsetWidth || window.innerWidth;
         setActivePanel(currentPanel - 1);
-        timeline.scrollBy({ left: -window.innerWidth, behavior: 'smooth' });
+        timeline.scrollBy({ left: -panelWidth, behavior: 'smooth' });
         updateArrows();
       }
     });
 
     arrowRight.addEventListener('click', () => {
       if (currentPanel < totalPanels - 1) {
+        const panelWidth = timeline.querySelector('[data-panel]')?.offsetWidth || window.innerWidth;
         setActivePanel(currentPanel + 1);
-        timeline.scrollBy({ left: window.innerWidth, behavior: 'smooth' });
+        timeline.scrollBy({ left: panelWidth, behavior: 'smooth' });
         updateArrows();
       }
     });
