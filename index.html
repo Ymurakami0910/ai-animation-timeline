@@ -528,7 +528,9 @@
     }
 
     /* ----------------------------------------------------------
-       SCENARIO CONTENT — unchanged structurally
+       SCENARIO CONTENT — CONSOLIDATED (replaces all previous defs)
+       Hidden by default. Active = flex row (45 content / 55 media).
+       scenario-content itself does NOT scroll — only pane-content-body does.
     ---------------------------------------------------------- */
     .scenario-content {
       display: none;
@@ -536,9 +538,24 @@
       transition: opacity 0.5s ease;
       position: relative;
       z-index: 2;
+      /* When active these get overridden below */
     }
 
-    .scenario-content.active { display: block; opacity: 1; }
+    .scenario-content.active {
+      display: flex !important;
+      flex-direction: row;
+      opacity: 1;
+      height: 100%;        /* fill remaining space in panel-year flex column */
+      min-height: 0;       /* allow flex child to shrink */
+      overflow: hidden;    /* clipping boundary — scrolling only in pane-content-body */
+    }
+
+    /* Headline panels with no .pane-media: content takes full width */
+    .scenario-content.active:not(:has(.pane-media)) .pane-content {
+      flex: 1 1 100%;
+      width: 100%;
+      padding-right: 0;
+    }
 
     /* ----------------------------------------------------------
        HEADLINE CELL
@@ -593,41 +610,207 @@
     }
 
     /* ----------------------------------------------------------
-       DEEP DIVE CELL
-       Changed: dark headings and body text on glass
+       SPLIT-PANE ARCHITECTURE — 45/55 layout
+       All content panels use this two-pane structure:
+       Left (45%): scrollable content pane
+       Right (55%): fixed media pane
+       The scenario-content wrapper must be display:flex for this to work.
     ---------------------------------------------------------- */
-    .cell-deepdive {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 3.5rem;
-      align-items: start;
-      max-width: 1100px;
+
+    /* Make scenario-content a flex row so split-pane works */
+    .scenario-content.active {
+      display: flex;
+      flex-direction: row;
+      height: 100%;
+      min-height: 0;
     }
 
-    .cell-deepdive h2 {
-      font-family: var(--font-heading);
-      font-size: clamp(1.8rem, 3.2vw, 2.8rem);
-      font-weight: 900;
-      letter-spacing: 0.05em;
-      line-height: 1.05;
-      margin-bottom: 1.25rem;
-      text-transform: uppercase;
-      color: #111111; /* Dark on glass */
+    /* --- CONTENT PANE (left, 45%) --- */
+    .pane-content {
+      flex: 0 0 45%;
+      width: 45%;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      padding-right: 2rem;
     }
 
-    .cell-deepdive .narrative {
-      font-size: 0.92rem;
-      line-height: 1.8;
-      color: #333333;
-      font-weight: 400;
+    /* Pinned section header inside content pane */
+    .pane-content-header {
+      flex-shrink: 0;
+      margin-bottom: 1rem;
     }
 
-    .cell-deepdive .narrative p { margin-bottom: 1rem; }
+    /* Scrollable body inside content pane */
+    .pane-content-body {
+      flex: 1 1 0;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,82,0,0.3) transparent;
+      padding-right: 0.5rem;
+    }
+
+    .pane-content-body::-webkit-scrollbar { width: 3px; }
+    .pane-content-body::-webkit-scrollbar-track { background: transparent; }
+    .pane-content-body::-webkit-scrollbar-thumb {
+      background: rgba(255,82,0,0.3);
+      border-radius: 2px;
+    }
+
+    /* --- MEDIA PANE (right, 55%) — sticky/fixed within the card --- */
+    .pane-media {
+      flex: 0 0 55%;
+      width: 55%;
+      position: sticky;
+      top: 0;
+      align-self: flex-start;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-left: 2rem;
+    }
 
     /* ----------------------------------------------------------
-       MEDIA SLOT
-       Changed: lighter frosted glass — a window on the gradient
+       MEDIA PLACEHOLDER SYSTEM
+       Consistent media containers for images, videos, and links.
     ---------------------------------------------------------- */
+
+    /* Base media container */
+    .media-container {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.35);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1.5px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10), var(--glass-inner);
+      border-radius: 0.75rem;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Image container: fills space, object-fit cover */
+    .media-container.media-image {
+      aspect-ratio: 4 / 3;
+    }
+
+    .media-container.media-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Video container: 16:9 standard or 9:16 shorts */
+    .media-container.media-video-landscape {
+      aspect-ratio: 16 / 9;
+    }
+
+    .media-container.media-video-portrait {
+      aspect-ratio: 9 / 16;
+      max-height: 100%;
+      max-width: 180px;
+      margin: 0 auto;
+    }
+
+    .media-container iframe,
+    .media-container video {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* Link preview card style */
+    .media-container.media-link {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      min-height: 200px;
+      justify-content: center;
+    }
+
+    .media-link-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-accent);
+    }
+
+    .media-link-title {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #111;
+      line-height: 1.15;
+    }
+
+    .media-link-desc {
+      font-size: 0.82rem;
+      color: #555;
+      line-height: 1.6;
+    }
+
+    .media-link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1.1rem;
+      background: var(--color-accent);
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border-radius: 2rem;
+      width: fit-content;
+      transition: opacity 0.2s;
+    }
+
+    .media-link-btn:hover { opacity: 0.85; }
+
+    /* Placeholder (empty slot) */
+    .media-container.media-placeholder {
+      aspect-ratio: 4 / 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      color: rgba(0,0,0,0.3);
+      font-size: 0.75rem;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .media-container.media-placeholder::before {
+      content: '◼  ◼  ◼  ◼  ◼  ◼  ◼';
+      font-size: 0.45rem;
+      letter-spacing: 0.3em;
+      color: rgba(255,82,0,0.2);
+      position: absolute;
+      top: 0.5rem;
+      left: 0; right: 0;
+      text-align: center;
+    }
+
+    /* ----------------------------------------------------------
+       LEGACY .cell-deepdive and .media-slot kept for
+       backwards compatibility but redirected to new system
+    ---------------------------------------------------------- */
+    .cell-deepdive {
+      display: contents; /* dissolve the wrapper — children become pane-content/pane-media */
+    }
+
+    /* Old media-slot repurposed as media-container alias */
     .media-slot {
       background: rgba(255, 255, 255, 0.35);
       backdrop-filter: blur(10px);
@@ -635,12 +818,13 @@
       border: 1.5px solid rgba(255, 255, 255, 0.5);
       box-shadow: 0 4px 16px rgba(0,0,0,0.10), var(--glass-inner);
       border-radius: 0.75rem;
-      min-height: 280px;
+      width: 100%;
+      aspect-ratio: 4 / 3;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: rgba(0,0,0,0.35); /* Dark muted placeholder text */
+      color: rgba(0,0,0,0.35);
       font-size: 0.8rem;
       text-align: center;
       padding: 2rem;
@@ -648,19 +832,18 @@
       overflow: hidden;
     }
 
-    /* Film perforation dots — subtle on glass */
     .media-slot::before {
-      content: '◼  ◼  ◼  ◼  ◼  ◼  ◼  ◼';
+      content: '◼  ◼  ◼  ◼  ◼  ◼  ◼';
       position: absolute;
       top: 0.4rem;
       left: 0; right: 0;
       text-align: center;
-      font-size: 0.5rem;
+      font-size: 0.45rem;
       letter-spacing: 0.3em;
-      color: rgba(255, 82, 0, 0.25);
+      color: rgba(255, 82, 0, 0.2);
     }
 
-    .media-slot p { max-width: 260px; line-height: 1.6; font-weight: 400; }
+    .media-slot p { max-width: 220px; line-height: 1.6; font-weight: 400; }
 
     .media-slot img,
     .media-slot video,
@@ -669,6 +852,27 @@
       object-fit: cover;
       border-radius: 0.5rem;
     }
+
+    /* ----------------------------------------------------------
+       HEADLINE CELL — also uses split-pane: text left, empty/link right
+    ---------------------------------------------------------- */
+    .cell-headline {
+      display: contents; /* dissolve — children layout via pane-content/pane-media */
+    }
+
+    /* Shared body text style inside panes */
+    .pane-content-body .context,
+    .pane-content-body .narrative,
+    .pane-content-body p {
+      font-size: 0.9rem;
+      line-height: 1.75;
+      color: #333;
+      font-weight: 400;
+      margin-bottom: 0.85rem;
+    }
+
+    .pane-content-body strong { font-weight: 700; color: #111; }
+    .pane-content-body em { font-style: italic; }
 
     /* ----------------------------------------------------------
        INTERVIEW QUOTE
@@ -1539,86 +1743,29 @@
     }
 
     /* ----------------------------------------------------------
-       OVERFLOW FIX — complete rewrite
-       Goal: year-header pinned, scenario-content fills remaining 
-       height and scrolls. In deep-dive panels, left text scrolls
-       while right media slot stays fixed (sticky).
+       OVERFLOW FIX — split-pane system
+       .panel-year: flex column, header pinned, scenario-content fills rest
+       .scenario-content.active: flex row (45/55), height 100%, overflow hidden
+       .pane-content-body: the ONLY thing that scrolls
     ---------------------------------------------------------- */
 
-    /* Panel: strict column flex so header + content stack cleanly */
+    /* Panel: strict column so year-header + scenario-content stack */
     .panel-year {
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
 
-    /* Year header: never moves, never shrinks */
-    .year-header {
-      flex-shrink: 0;
-    }
+    /* Year header never shrinks */
+    .year-header { flex-shrink: 0; }
 
-    /* Scenario content area: fills all remaining vertical space.
-       overflow-y: auto makes THIS the scroll container.
-       min-height: 0 is critical — without it flex children won't shrink. */
+    /* scenario-content fills remaining height */
     .scenario-content {
       flex: 1 1 0;
       min-height: 0;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding-right: 0.25rem;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255,82,0,0.35) transparent;
     }
 
-    .scenario-content::-webkit-scrollbar { width: 4px; }
-    .scenario-content::-webkit-scrollbar-track { background: transparent; }
-    .scenario-content::-webkit-scrollbar-thumb {
-      background: rgba(255,82,0,0.35);
-      border-radius: 2px;
-    }
-
-    /* ----------------------------------------------------------
-       DEEP DIVE: two-column layout inside the scroll container.
-       The scroll container (.scenario-content) is the scroll root.
-       Left text column: normal flow, scrolls with parent.
-       Right media column: sticky top:0 so it never scrolls away.
-    ---------------------------------------------------------- */
-    .cell-deepdive {
-      /* Fill the scroll container width; don't set height:100% — 
-         that would try to match the scroll container's scroll height */
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 3.5rem;
-      align-items: start;
-      max-width: 1100px;
-      /* Minimum height so grid is never collapsed */
-      min-height: 100%;
-    }
-
-    /* Left text column scrolls naturally with .scenario-content */
-    .cell-deepdive > div:first-child {
-      /* No special overflow — it grows with content and scrolls via parent */
-    }
-
-    /* Right media column: sticky within the scroll container.
-       This keeps the video/image pinned while text scrolls left. */
-    .cell-deepdive > .media-slot {
-      position: sticky;
-      top: 0;
-      align-self: start;
-      flex-shrink: 0;
-    }
-
-    /* Headline cell: single column, just needs min-height:0 */
-    .cell-headline {
-      min-height: 0;
-    }
-
-    /* ----------------------------------------------------------
-       CLOSING PANEL overflow fix:
-       Use same flex-column pattern as year panels.
-       h2 pinned, closing-body scrolls.
-    ---------------------------------------------------------- */
+    /* Closing panel: same flex-column pattern */
     .panel-closing {
       display: flex;
       flex-direction: column;
@@ -1629,57 +1776,153 @@
       padding-right: 6rem;
     }
 
-    .panel-closing h2 {
+    .panel-closing > h2 {
       flex-shrink: 0;
       width: 100%;
       margin-bottom: 1.5rem;
     }
 
-    /* Closing body fills remaining height, scrolls as needed */
     .closing-body {
       flex: 1 1 0;
       min-height: 0;
       display: grid;
-      grid-template-columns: 1fr 220px;
+      grid-template-columns: 1fr 260px;
       gap: 2.5rem;
       align-items: start;
       width: 100%;
-      max-width: 1100px;
+      max-width: 1200px;
       position: relative;
       z-index: 1;
-      overflow-y: auto;
-      overflow-x: hidden;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255,82,0,0.3) transparent;
+      overflow: hidden;
     }
 
-    /* Remove the duplicate max-height on closing-text-col — 
-       the parent closing-body now handles scrolling */
     .closing-text-col {
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
-      overflow: visible;
-      max-height: none;
+      overflow-y: auto;
+      height: 100%;
+      min-height: 0;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,82,0,0.3) transparent;
       padding-right: 0.5rem;
     }
 
-    /* Right video column: sticky so it stays in view while text scrolls */
+    .closing-text-col::-webkit-scrollbar { width: 3px; }
+    .closing-text-col::-webkit-scrollbar-track { background: transparent; }
+    .closing-text-col::-webkit-scrollbar-thumb { background: rgba(255,82,0,0.3); border-radius: 2px; }
+
     .closing-video-col {
       position: sticky;
       top: 0;
       align-self: start;
       display: flex;
       flex-direction: column;
-      gap: 0.6rem;
+      gap: 0.75rem;
       flex-shrink: 0;
     }
 
     @media (max-width: 768px) {
       .closing-body { grid-template-columns: 1fr; }
       .panel-closing { padding-left: 2rem; padding-right: 2rem; }
-      .closing-yt-thumb { max-width: 200px; margin: 0 auto; }
       .closing-video-col { position: static; }
+      .scenario-content.active { flex-direction: column; }
+      .pane-content, .pane-media { width: 100%; flex: none; padding: 0; }
+      .pane-media { padding-top: 1rem; }
+    }
+    /* ----------------------------------------------------------
+       FPS WIDGET — Spider-Verse 12fps vs 24fps interactive
+    ---------------------------------------------------------- */
+    .fps-widget {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      align-items: center;
+      width: 100%;
+    }
+
+    .fps-toggle-row {
+      display: flex;
+      gap: 0.4rem;
+      background: rgba(255,255,255,0.45);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 2rem;
+      padding: 0.25rem;
+      border: 1px solid rgba(255,255,255,0.6);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .fps-btn {
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.45rem 1rem;
+      border: none;
+      border-radius: 2rem;
+      cursor: pointer;
+      background: transparent;
+      color: rgba(0,0,0,0.45);
+      transition: all 0.3s ease;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .fps-btn.active {
+      background: var(--color-accent);
+      color: #fff;
+      font-weight: 800;
+    }
+
+    .fps-stage {
+      background: rgba(255,255,255,0.3);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1.5px solid rgba(255,255,255,0.5);
+      border-radius: 1rem;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    #fpsCanvas {
+      display: block;
+      max-width: 100%;
+    }
+
+    .fps-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #555;
+      text-align: center;
+      letter-spacing: 0.04em;
+      line-height: 1.4;
+    }
+
+    /* Body paragraph spacing inside pane-content-body */
+    .pane-content-body p {
+      margin-bottom: 0.85rem;
+      font-size: 0.9rem;
+      line-height: 1.7;
+      color: #333;
+    }
+
+    .pane-content-body p:last-child { margin-bottom: 0; }
+
+    /* media-placeholder style (fallback for empty media pane) */
+    .media-placeholder {
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      color: rgba(0,0,0,0.3);
+      font-size: 0.8rem;
+      text-align: center;
+      aspect-ratio: 4 / 3;
     }
   </style>
 </head>
@@ -1805,64 +2048,61 @@
       <div class="year-label">2027</div>
       <div class="year-header">2027</div>
 
-      <!-- OPTIMISTIC — Headline only -->
-      <!-- CHANGED: Content from PDF "Optimistic 2027" column -->
+      <!-- OPTIMISTIC 2027 — content left, link preview right -->
       <div class="scenario-content" data-scenario="optimistic">
-        <div class="cell-headline">
-          <h2>AI as a Creative Assistant — Human Storytelling Leads</h2>
-          <p class="context">
-            AI assists with pre-visualization, temporary voice lines, and fast editing experiments —
-            freeing directors to test ideas faster without replacing the artists who bring them to life.
-            Human creativity and storytelling still drive every project.
-          </p>
+        <div class="pane-content">
+          <div class="pane-content-header">
+            <h2 class="cell-headline" style="font-family:var(--font-heading);font-size:clamp(1.8rem,3vw,2.8rem);font-weight:900;letter-spacing:0.05em;line-height:1.05;text-transform:uppercase;color:#111;margin-bottom:0.75rem;">AI as a Creative Assistant — Human Storytelling Leads</h2>
+          </div>
+          <div class="pane-content-body">
+            <p><strong>AI assists, humans lead.</strong> Pre-visualization, temp voice lines, fast editing experiments — all accelerated by AI.</p>
+            <p>Directors <strong>test ideas faster</strong> without replacing the artists who bring them to life. <strong>Human creativity still drives every project.</strong></p>
+          </div>
+        </div>
+        <div class="pane-media">
+          <div class="media-container media-placeholder">
+            <p>Add an image or chart here</p>
+          </div>
         </div>
       </div>
 
-      <!-- MOST LIKELY — Deep dive with Justin quote + media slot -->
-      <!-- CHANGED: Full content + Justin Marmulk quote from PDF -->
+      <!-- MOST LIKELY 2027 — content left, media right -->
       <div class="scenario-content active" data-scenario="likely">
-        <div class="cell-deepdive">
-          <div>
-            <h2>AI Actively Improves Speed &amp; Production Pipelines</h2>
-            <div class="narrative">
-              <p>
-                By 2027, AI-driven tools are already embedded across animation workflows —
-                accelerating pre-visualization, automating repetitive rendering passes,
-                and compressing production timelines without eliminating creative roles.
-              </p>
-              <p>
-                Studios are experimenting cautiously: AI handles the scaffolding,
-                humans define the vision. Production coordinators and directors
-                report faster iteration but no wholesale replacement of artists yet.
-              </p>
-            </div>
-            <!-- CHANGED: Justin Marmulk quote on pre-viz use -->
+        <div class="pane-content">
+          <div class="pane-content-header">
+            <h2 style="font-family:var(--font-heading);font-size:clamp(1.8rem,3vw,2.8rem);font-weight:900;letter-spacing:0.05em;line-height:1.05;text-transform:uppercase;color:#111;margin-bottom:0.75rem;">AI Actively Improves Speed &amp; Production Pipelines</h2>
+          </div>
+          <div class="pane-content-body">
+            <p><strong>AI is already embedded</strong> across animation workflows — accelerating pre-viz, automating rendering, compressing timelines.</p>
+            <p>Studios experiment cautiously: <strong>AI handles the scaffolding, humans define the vision.</strong> Faster iteration, but no wholesale replacement of artists yet.</p>
             <div class="interview-quote">
-              <blockquote>"I could see some things in animation where it would be pretty useful for pre-visualization… where the point is to have something blocked out in 3D really quickly. I've seen people use AI-generated audio where you just type it out and it gives you a file of somebody speaking. Things like that could help mitigate the speed at which you're visualizing stuff."</blockquote>
-              <cite>— Justin Marmulk, Production Coordinator · Netflix Animation</cite>
+              <blockquote>"I could see AI being useful for pre-visualization… blocked out in 3D really quickly… AI-generated audio where you just type it out. Things like that could help mitigate the speed at which you're visualizing stuff."</blockquote>
+              <cite>— Justin Marmulak, Production Coordinator · Netflix Animation</cite>
             </div>
           </div>
-          <!-- MEDIA SLOT: Replace <p> with an <img> or <iframe> embed -->
+        </div>
+        <div class="pane-media">
           <div class="media-slot">
-            <p>
-              Media slot<br><br>
-              Add an image, chart, or video clip here.<br><br>
-              Suggested: screenshot of an AI pre-viz tool in action, or embed your interview clip.
-            </p>
+            <p>Media slot<br><br>Add image, chart, or video clip.<br><br>Suggested: AI pre-viz tool screenshot.</p>
           </div>
         </div>
       </div>
 
-      <!-- PESSIMISTIC — Headline only -->
-      <!-- CHANGED: Content from PDF "Pessimistic 2027" column -->
+      <!-- PESSIMISTIC 2027 — content left, placeholder right -->
       <div class="scenario-content" data-scenario="pessimistic">
-        <div class="cell-headline">
-          <h2>AI Isn't Ready — But Studios Use It to Cut Costs Anyway</h2>
-          <p class="context">
-            Studios begin deploying AI primarily as a cost-cutting measure, reducing entry-level animation jobs
-            before the tools are mature enough to maintain quality. Younger creators risk becoming
-            over-reliant on AI, weakening foundational animation skills.
-          </p>
+        <div class="pane-content">
+          <div class="pane-content-header">
+            <h2 style="font-family:var(--font-heading);font-size:clamp(1.8rem,3vw,2.8rem);font-weight:900;letter-spacing:0.05em;line-height:1.05;text-transform:uppercase;color:#111;margin-bottom:0.75rem;">AI Isn't Ready — But Studios Use It to Cut Costs Anyway</h2>
+          </div>
+          <div class="pane-content-body">
+            <p>Studios deploy AI primarily as a <strong>cost-cutting measure</strong>, reducing entry-level animation jobs before the tools are mature enough to maintain quality.</p>
+            <p>Younger creators risk becoming <strong>over-reliant on AI</strong>, weakening foundational animation skills.</p>
+          </div>
+        </div>
+        <div class="pane-media">
+          <div class="media-container media-placeholder">
+            <p>Add an image or chart here</p>
+          </div>
         </div>
       </div>
     </section>
@@ -1876,73 +2116,69 @@
       <div class="year-label">2031</div>
       <div class="year-header">2031</div>
 
-      <!-- OPTIMISTIC — Deep dive with Justin quote + media slot -->
-      <!-- CHANGED: Content from PDF "Optimistic 2031" column -->
+      <!-- OPTIMISTIC 2031 — deep dive with media -->
       <div class="scenario-content" data-scenario="optimistic">
-        <div class="cell-deepdive">
-          <div>
-            <h2>AI Supports Creative Decisions — Faster Workflows, Human Direction</h2>
-            <div class="narrative">
-              <p>
-                AI becomes a powerful analytical partner: filmmakers use it to evaluate scripts,
-                suggest cinematography styles, and simulate audience reactions before a single frame
-                is rendered. Creative directors remain firmly in charge.
-              </p>
-              <p>
-                Animation teams work faster and with greater confidence — AI handles the hours of
-                repetitive rendering and tweaking that once consumed human energy and budget.
-              </p>
-            </div>
-            <!-- CHANGED: Justin Marmulk quote on rendering automation -->
+        <div class="pane-content">
+          <div class="pane-content-header">
+            <h2 style="font-family:var(--font-heading);font-size:clamp(1.8rem,3vw,2.8rem);font-weight:900;letter-spacing:0.05em;line-height:1.05;text-transform:uppercase;color:#111;margin-bottom:0.75rem;">AI Supports Creative Decisions — Faster Workflows, Human Direction</h2>
+          </div>
+          <div class="pane-content-body">
+            <p>AI becomes a <strong>powerful analytical partner</strong> — evaluating scripts, suggesting cinematography, simulating audience reactions. <strong>Creative directors remain firmly in charge.</strong></p>
+            <p>Animation teams work faster with <strong>greater confidence</strong>. AI handles hours of repetitive rendering that once consumed human energy and budget.</p>
             <div class="interview-quote">
-              <blockquote>"I think that will definitely have an impact for action movies or sci-fi things… if you're still giving a creative direction, but it's the actual hours of repetitive tasks of rendering and seeing what it looks like, and then tweaking and rendering — that all takes time and human hours. I can see stuff like that kind of being washed away."</blockquote>
-              <cite>— Justin Marmulk, Production Coordinator · Netflix Animation</cite>
+              <blockquote>"The repetitive tasks of rendering and seeing what it looks like, and then tweaking and rendering — that all takes time and human hours. I can see stuff like that kind of being washed away."</blockquote>
+              <cite>— Justin Marmulak, Production Coordinator · Netflix Animation</cite>
             </div>
           </div>
-          <!-- MEDIA SLOT: Suggested — AI-driven workflow diagram or studio pipeline chart -->
+        </div>
+        <div class="pane-media">
           <div class="media-slot">
-            <p>
-              Media slot<br><br>
-              Add a workflow diagram, chart, or video here.<br><br>
-              Suggested: Cartoon Brew / Luminate 2025 animation jobs report visual.
-            </p>
+            <p>Media slot<br><br>Add a workflow diagram or chart.<br><br>Suggested: Cartoon Brew / Luminate 2025 report.</p>
           </div>
         </div>
       </div>
 
-      <!-- MOST LIKELY — Headline with source links -->
-      <!-- CHANGED: Content from PDF "Most Likely 2031" + sources -->
+      <!-- MOST LIKELY 2031 — headline + sources + link card -->
       <div class="scenario-content active" data-scenario="likely">
-        <div class="cell-headline">
-          <h2>AI-Driven Workflows Become the Norm Across Animation Studios</h2>
-          <p class="context">
-            By 2031, most mid-to-large animation studios have standardized on AI-assisted pipelines
-            for rendering, compositing, and scheduling. The question is no longer whether to adopt AI —
-            it's how to maintain creative authenticity while doing so.
-          </p>
-          <!-- ADDED: Source links from PDF brief -->
-          <div class="source-links">
-            <div class="source-links-label">Sources</div>
-            <a href="https://www.cartoonbrew.com/tech/animation-jobs-in-the-age-of-ai-revelations-from-luminate-intelligences-2025-special-report-253718.html" target="_blank" rel="noopener">
-              Cartoon Brew — Animation Jobs in the Age of AI: Luminate 2025 Report ↗
-            </a>
-            <a href="https://smokingchimneystudios.com/ai-transforming-cgi-animation-workflows/" target="_blank" rel="noopener">
-              Smoking Chimney Studios — AI Transforming CGI Animation Workflows ↗
-            </a>
+        <div class="pane-content">
+          <div class="pane-content-header">
+            <h2 style="font-family:var(--font-heading);font-size:clamp(1.8rem,3vw,2.8rem);font-weight:900;letter-spacing:0.05em;line-height:1.05;text-transform:uppercase;color:#111;margin-bottom:0.75rem;">AI-Driven Workflows Become the Norm Across Animation Studios</h2>
+          </div>
+          <div class="pane-content-body">
+            <p>By 2031, most studios have <strong>standardized on AI-assisted pipelines</strong> for rendering, compositing, and scheduling.</p>
+            <p>The question is no longer <em>whether</em> to adopt AI — it's <strong>how to maintain creative authenticity</strong> while doing so.</p>
+            <div class="source-links">
+              <div class="source-links-label">Sources</div>
+              <a href="https://www.cartoonbrew.com/tech/animation-jobs-in-the-age-of-ai-revelations-from-luminate-intelligences-2025-special-report-253718.html" target="_blank" rel="noopener">Cartoon Brew — Luminate 2025 Report ↗</a>
+              <a href="https://smokingchimneystudios.com/ai-transforming-cgi-animation-workflows/" target="_blank" rel="noopener">Smoking Chimney Studios — AI Transforming CGI Workflows ↗</a>
+            </div>
+          </div>
+        </div>
+        <div class="pane-media">
+          <div class="media-container media-link">
+            <div class="media-link-label">Read the Report</div>
+            <div class="media-link-title">Animation Jobs in the Age of AI</div>
+            <p class="media-link-desc">Luminate Intelligence's 2025 special report on AI's impact across animation studios.</p>
+            <a href="https://www.cartoonbrew.com/tech/animation-jobs-in-the-age-of-ai-revelations-from-luminate-intelligences-2025-special-report-253718.html" target="_blank" rel="noopener" class="media-link-btn">Open Report ↗</a>
           </div>
         </div>
       </div>
 
-      <!-- PESSIMISTIC — Headline only -->
-      <!-- CHANGED: Content from PDF "Pessimistic 2031" column -->
+      <!-- PESSIMISTIC 2031 — headline + placeholder -->
       <div class="scenario-content" data-scenario="pessimistic">
-        <div class="cell-headline">
-          <h2>AI Begins Influencing Creative Control — Artistic Risk-Taking Declines</h2>
-          <p class="context">
-            Studios automate increasing portions of the pipeline, reducing technical roles in rendering,
-            editing, and scheduling. Creative decisions begin deferring to data-driven AI suggestions,
-            narrowing the scope for bold artistic choices and unconventional storytelling.
-          </p>
+        <div class="pane-content">
+          <div class="pane-content-header">
+            <h2 style="font-family:var(--font-heading);font-size:clamp(1.8rem,3vw,2.8rem);font-weight:900;letter-spacing:0.05em;line-height:1.05;text-transform:uppercase;color:#111;margin-bottom:0.75rem;">AI Begins Influencing Creative Control — Artistic Risk-Taking Declines</h2>
+          </div>
+          <div class="pane-content-body">
+            <p>Studios automate increasing portions of the pipeline, <strong>reducing technical roles</strong> in rendering, editing, and scheduling.</p>
+            <p>Creative decisions begin deferring to <strong>data-driven AI suggestions</strong>, narrowing the scope for bold artistic choices.</p>
+          </div>
+        </div>
+        <div class="pane-media">
+          <div class="media-container media-placeholder">
+            <p>Add an image or chart here</p>
+          </div>
         </div>
       </div>
     </section>
@@ -1956,79 +2192,72 @@
       <div class="year-label">2036</div>
       <div class="year-header">2036</div>
 
-      <!-- OPTIMISTIC — Headline only -->
-      <!-- CHANGED: Content from PDF "Optimistic 2036" column -->
+      <!-- OPTIMISTIC 2036 — quote + placeholder -->
       <div class="scenario-content" data-scenario="optimistic">
-        <div class="cell-headline">
-          <h2>AI Accelerates the Pipeline — Independent Filmmakers Rise</h2>
-          <p class="context">
-            AI dramatically speeds up rendering, VFX, and scene visualization. Independent creators
-            gain access to studio-quality tools with small teams, democratizing high-quality animation.
-            But audiences increasingly seek hand-crafted work that reflects human perspective and identity.
-          </p>
-          <!-- CHANGED: Justin Marmulk quote on audience preference for human art -->
-          <div class="interview-quote" style="margin-top:1.5rem;">
-            <blockquote>"I firmly believe that when we see Disney and other studios in 10 years making AI-driven movies, versus people on YouTube making hand-drawn animation — people are going to prefer the other. People want to see themselves in the art."</blockquote>
-            <cite>— Justin Marmulk, Production Coordinator · Netflix Animation</cite>
+        <div class="pane-content">
+          <div class="pane-content-header">
+            <h2 style="font-family:var(--font-heading);font-size:clamp(1.8rem,3vw,2.8rem);font-weight:900;letter-spacing:0.05em;line-height:1.05;text-transform:uppercase;color:#111;margin-bottom:0.75rem;">AI Accelerates the Pipeline — Independent Filmmakers Rise</h2>
           </div>
-        </div>
-      </div>
-
-      <!-- MOST LIKELY — Headline with source links -->
-      <!-- CHANGED: Content from PDF "Most Likely 2036" + sources -->
-      <div class="scenario-content active" data-scenario="likely">
-        <div class="cell-headline">
-          <h2>Generative AI in Animation Surges Toward a $100B+ Market</h2>
-          <p class="context">
-            The global market for generative AI in animation and motion graphics explodes past $100 billion.
-            Studios that invested early in human-AI hybrid workflows lead the industry —
-            while those that resisted face rapid obsolescence. The tools are industry-standard;
-            the competitive edge now belongs to the most creatively ambitious humans.
-          </p>
-          <div class="source-links">
-            <div class="source-links-label">Sources</div>
-            <a href="https://vitrina.ai/blog/ai-film-animation-documentary-2024-2027/" target="_blank" rel="noopener">
-              Vitrina AI — AI in Film, Animation &amp; Documentary 2024–2027 ↗
-            </a>
-            <a href="https://web.superagi.com/future-of-motion-graphics-how-ai-is-revolutionizing-animation-and-visual-effects-in-2025/" target="_blank" rel="noopener">
-              SuperAGI — Future of Motion Graphics: AI in Animation &amp; VFX 2025 ↗
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- PESSIMISTIC — Deep dive -->
-      <!-- CHANGED: Content from PDF "Pessimistic 2036" column + Justin counter-quote -->
-      <div class="scenario-content" data-scenario="pessimistic">
-        <div class="cell-deepdive">
-          <div>
-            <h2>Automation Hollows Out the Technical Pipeline — Studios Consolidate Power</h2>
-            <div class="narrative">
-              <p>
-                Major studios control the most powerful proprietary AI tools, concentrating creative
-                and economic power into a handful of corporations. Most technical pipeline roles —
-                lighting, rendering, compositing, scheduling — have been automated away.
-              </p>
-              <p>
-                The industry produces films optimized for AI efficiency metrics rather than emotional
-                resonance. Audiences sense something missing: the films are technically flawless
-                but feel hollow. A cultural backlash builds around authenticity and human craft.
-              </p>
+          <div class="pane-content-body">
+            <p>AI dramatically speeds up <strong>rendering, VFX, and scene visualization</strong>. Independent creators gain studio-quality tools with small teams.</p>
+            <p>But audiences increasingly seek <strong>hand-crafted work that reflects human perspective</strong> and identity.</p>
+            <div class="interview-quote">
+              <blockquote>"I firmly believe that when we see Disney making AI-driven movies versus people on YouTube making hand-drawn animation — people are going to prefer the other. <strong>People want to see themselves in the art.</strong>"</blockquote>
+              <cite>— Justin Marmulak, Production Coordinator · Netflix Animation</cite>
             </div>
-            <!-- CHANGED: Justin's quote recontextualized as a warning in the pessimistic scenario -->
+          </div>
+        </div>
+        <div class="pane-media">
+          <div class="media-container media-placeholder">
+            <p>Add an image or chart here</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- MOST LIKELY 2036 — headline + link card -->
+      <div class="scenario-content active" data-scenario="likely">
+        <div class="pane-content">
+          <div class="pane-content-header">
+            <h2 style="font-family:var(--font-heading);font-size:clamp(1.8rem,3vw,2.8rem);font-weight:900;letter-spacing:0.05em;line-height:1.05;text-transform:uppercase;color:#111;margin-bottom:0.75rem;">Generative AI in Animation Surges Toward a $100B+ Market</h2>
+          </div>
+          <div class="pane-content-body">
+            <p>The global market for generative AI in animation <strong>explodes past $100 billion</strong>. Studios that invested early in human-AI hybrid workflows lead the industry.</p>
+            <p>The tools are industry-standard. The <strong>competitive edge belongs to the most creatively ambitious humans.</strong></p>
+            <div class="source-links">
+              <div class="source-links-label">Sources</div>
+              <a href="https://vitrina.ai/blog/ai-film-animation-documentary-2024-2027/" target="_blank" rel="noopener">Vitrina AI — AI in Film, Animation &amp; Documentary 2024–2027 ↗</a>
+              <a href="https://web.superagi.com/future-of-motion-graphics-how-ai-is-revolutionizing-animation-and-visual-effects-in-2025/" target="_blank" rel="noopener">SuperAGI — Future of Motion Graphics: AI in Animation &amp; VFX 2025 ↗</a>
+            </div>
+          </div>
+        </div>
+        <div class="pane-media">
+          <div class="media-container media-link">
+            <div class="media-link-label">Market Research</div>
+            <div class="media-link-title">$100B+ Generative AI Market</div>
+            <p class="media-link-desc">AI in motion graphics and animation is on a trajectory to reshape the entire industry by 2036.</p>
+            <a href="https://web.superagi.com/future-of-motion-graphics-how-ai-is-revolutionizing-animation-and-visual-effects-in-2025/" target="_blank" rel="noopener" class="media-link-btn">Read Report ↗</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- PESSIMISTIC 2036 — deep dive + media -->
+      <div class="scenario-content" data-scenario="pessimistic">
+        <div class="pane-content">
+          <div class="pane-content-header">
+            <h2 style="font-family:var(--font-heading);font-size:clamp(1.8rem,3vw,2.8rem);font-weight:900;letter-spacing:0.05em;line-height:1.05;text-transform:uppercase;color:#111;margin-bottom:0.75rem;">Automation Hollows Out the Pipeline — Studios Consolidate Power</h2>
+          </div>
+          <div class="pane-content-body">
+            <p>Major studios control the most powerful proprietary AI tools, <strong>concentrating creative and economic power</strong> in a handful of corporations.</p>
+            <p>Films optimized for <strong>AI efficiency metrics</strong> rather than emotional resonance. Audiences sense something missing. <strong>A cultural backlash builds.</strong></p>
             <div class="interview-quote">
               <blockquote>"People are going to prefer the other. People want to see themselves in the art."</blockquote>
-              <cite>— Justin Marmulk, Production Coordinator · Netflix Animation<br>
-              <span style="opacity:0.5; font-style:italic;">In the pessimistic scenario, studios ignore this — and audiences eventually respond.</span></cite>
+              <cite>— Justin Marmulak · <span style="opacity:0.5;font-style:italic;">In the pessimistic scenario, studios ignore this.</span></cite>
             </div>
           </div>
-          <!-- MEDIA SLOT: Suggested — job loss chart or consolidation graphic -->
+        </div>
+        <div class="pane-media">
           <div class="media-slot">
-            <p>
-              Media slot<br><br>
-              Add a chart or article screenshot here.<br><br>
-              Suggested: Animation job loss projections or big-studio market share data.
-            </p>
+            <p>Media slot<br><br>Add a chart here.<br><br>Suggested: Animation job loss projections.</p>
           </div>
         </div>
       </div>
@@ -2040,22 +2269,12 @@
       <h2>Where Does the <span>Soul</span> of Animation Lie?</h2>
       <div class="closing-body">
 
-        <!-- Left: punchy text + hover-reveal quote -->
+        <!-- Left: text + hover-reveal -->
         <div class="closing-text-col">
-          <p class="closing-text">
-            <strong>AI pursues the "ideal."</strong> It generates perfectly smooth 24fps — optimized, frictionless, data-perfect.
-          </p>
-          <p class="closing-text">
-            But sometimes <strong>12fps is the human experience.</strong> In Spider-Verse, Miles Morales starts choppy — <strong>you see every decision.</strong> That roughness isn't a bug. It's the soul.
-          </p>
-          <p class="closing-text">
-            Human animators use <strong>"imperfection" to reflect human experience.</strong> AI, by design, tends to overlook the emotional truth in clumsiness, roughness, and rawness.
-          </p>
-          <p class="closing-text">
-            When AI handles the <em>method</em>, <strong>"why"</strong> becomes everything. What deeply personal, imperfect human truth will make your audience feel understood?
-          </p>
-
-          <!-- Hover-reveal interactive quote -->
+          <p class="closing-text"><strong>AI pursues the "ideal."</strong> Perfectly smooth 24fps — optimized, frictionless, data-perfect.</p>
+          <p class="closing-text">But sometimes <strong>12fps is the human experience.</strong> In Spider-Verse, Miles Morales starts choppy — <strong>you see every decision.</strong> That roughness isn't a bug. It's the soul.</p>
+          <p class="closing-text">Human animators use <strong>"imperfection" to reflect human experience.</strong> AI tends to overlook the emotional truth in clumsiness, roughness, and rawness.</p>
+          <p class="closing-text">When AI handles the <em>method</em>, <strong>"why"</strong> becomes everything.</p>
           <div class="closing-reveal" id="closingReveal">
             <div class="closing-reveal-prompt">Hover to reveal →</div>
             <div class="closing-reveal-quote">
@@ -2065,22 +2284,26 @@
           </div>
         </div>
 
-        <!-- Right: YouTube thumbnail + Watch button -->
+        <!-- Right: Spider-Verse fps toggle interactive -->
         <div class="closing-video-col">
-          <div class="closing-yt-thumb">
-            <!-- Static thumbnail — replace src with your own YouTube thumbnail if needed -->
-            <img
-              src="https://img.youtube.com/vi/OwGqajVcCiM/hqdefault.jpg"
-              alt="12fps animation example — Spider-Verse style"
-              class="closing-yt-img">
-            <div class="closing-yt-overlay">
-              <div class="closing-yt-play">▶</div>
+          <!-- FPS TOGGLE WIDGET -->
+          <div class="fps-widget">
+            <div class="fps-toggle-row">
+              <button class="fps-btn active" id="btn12fps" onclick="setFps(12)">12fps — Human</button>
+              <button class="fps-btn" id="btn24fps" onclick="setFps(24)">24fps — AI</button>
             </div>
-            <a href="https://youtube.com/shorts/OwGqajVcCiM?si=7OmvwK0N8gi4_w1q"
-               target="_blank" rel="noopener"
-               class="closing-yt-btn">
-              Watch on YouTube ↗
-            </a>
+            <div class="fps-stage" id="fpsStage">
+              <!-- Spider walking character — pure CSS/SVG animation -->
+              <canvas id="fpsCanvas" width="220" height="220"></canvas>
+            </div>
+            <p class="fps-label" id="fpsLabel">12fps — Choppy. Human. You see every decision.</p>
+          </div>
+
+          <!-- YouTube link below -->
+          <div class="closing-yt-thumb" style="margin-top:0.75rem;">
+            <img src="https://img.youtube.com/vi/OwGqajVcCiM/hqdefault.jpg" alt="12fps animation example" class="closing-yt-img">
+            <div class="closing-yt-overlay"><div class="closing-yt-play">▶</div></div>
+            <a href="https://youtube.com/shorts/OwGqajVcCiM?si=7OmvwK0N8gi4_w1q" target="_blank" rel="noopener" class="closing-yt-btn">Watch on YouTube ↗</a>
           </div>
           <p class="closing-video-label">Example: 12fps hand-drawn animation</p>
         </div>
@@ -2426,6 +2649,130 @@
                          >= interviewSection.scrollHeight - 80;
       interviewScrollHint.style.opacity = nearBottom ? '0' : '1';
     });
+
+    // ==========================================================
+    // SPIDER-VERSE FPS TOGGLE — 12fps (human/choppy) vs 24fps (AI/smooth)
+    // Draws a simple walking stick figure on canvas.
+    // At 12fps: slow, choppy, you see every frame decision.
+    // At 24fps: smooth, fluid, frictionless.
+    // ==========================================================
+
+    const fpsCanvas = document.getElementById('fpsCanvas');
+    const fpsCtx = fpsCanvas ? fpsCanvas.getContext('2d') : null;
+    let currentFps = 12;
+    let frameIndex = 0;
+    let lastFrameTime = 0;
+    let animFrameId = null;
+
+    // Walking cycle: 8 keyframes of a stick figure
+    // Each frame: [bodyX, legLAngle, legRAngle, armLAngle, armRAngle]
+    const walkFrames = [
+      { legL: -30, legR: 30,  armL: 25,  armR: -25 },
+      { legL: -20, legR: 20,  armL: 18,  armR: -18 },
+      { legL: -10, legR: 10,  armL: 10,  armR: -10 },
+      { legL:   0, legR:  0,  armL:  0,  armR:   0 },
+      { legL:  30, legR:-30,  armL:-25,  armR:  25 },
+      { legL:  20, legR:-20,  armL:-18,  armR:  18 },
+      { legL:  10, legR:-10,  armL:-10,  armR:  10 },
+      { legL:   0, legR:  0,  armL:  0,  armR:   0 },
+    ];
+
+    function drawFigure(frame) {
+      if (!fpsCtx) return;
+      const w = fpsCanvas.width, h = fpsCanvas.height;
+      fpsCtx.clearRect(0, 0, w, h);
+
+      const cx = w / 2, cy = h / 2;
+      const accentColor = '#ff5200';
+      const bodyColor = '#111111';
+      const legLen = 45, armLen = 35, bodyLen = 50;
+
+      fpsCtx.strokeStyle = bodyColor;
+      fpsCtx.lineWidth = 3;
+      fpsCtx.lineCap = 'round';
+
+      // Head
+      fpsCtx.beginPath();
+      fpsCtx.arc(cx, cy - bodyLen - 20, 18, 0, Math.PI * 2);
+      fpsCtx.strokeStyle = bodyColor;
+      fpsCtx.stroke();
+
+      // Body
+      fpsCtx.beginPath();
+      fpsCtx.moveTo(cx, cy - bodyLen);
+      fpsCtx.lineTo(cx, cy);
+      fpsCtx.strokeStyle = bodyColor;
+      fpsCtx.stroke();
+
+      // Left leg
+      const llRad = (frame.legL * Math.PI) / 180;
+      fpsCtx.beginPath();
+      fpsCtx.moveTo(cx, cy);
+      fpsCtx.lineTo(cx + Math.sin(llRad) * legLen, cy + Math.cos(llRad) * legLen);
+      fpsCtx.strokeStyle = currentFps === 12 ? accentColor : bodyColor;
+      fpsCtx.lineWidth = currentFps === 12 ? 4 : 3;
+      fpsCtx.stroke();
+
+      // Right leg
+      const rlRad = (frame.legR * Math.PI) / 180;
+      fpsCtx.beginPath();
+      fpsCtx.moveTo(cx, cy);
+      fpsCtx.lineTo(cx + Math.sin(rlRad) * legLen, cy + Math.cos(rlRad) * legLen);
+      fpsCtx.strokeStyle = currentFps === 12 ? accentColor : bodyColor;
+      fpsCtx.stroke();
+
+      // Left arm
+      const laRad = (frame.armL * Math.PI) / 180;
+      const armY = cy - bodyLen * 0.6;
+      fpsCtx.beginPath();
+      fpsCtx.moveTo(cx, armY);
+      fpsCtx.lineTo(cx + Math.sin(laRad) * armLen, armY + Math.cos(laRad) * armLen * 0.5);
+      fpsCtx.strokeStyle = bodyColor;
+      fpsCtx.lineWidth = 3;
+      fpsCtx.stroke();
+
+      // Right arm
+      const raRad = (frame.armR * Math.PI) / 180;
+      fpsCtx.beginPath();
+      fpsCtx.moveTo(cx, armY);
+      fpsCtx.lineTo(cx + Math.sin(raRad) * armLen, armY + Math.cos(raRad) * armLen * 0.5);
+      fpsCtx.stroke();
+
+      // FPS label on canvas
+      fpsCtx.fillStyle = currentFps === 12 ? accentColor : '#555';
+      fpsCtx.font = 'bold 11px Inter, sans-serif';
+      fpsCtx.textAlign = 'center';
+      fpsCtx.fillText(currentFps + 'fps', cx, h - 10);
+    }
+
+    function animateFigure(timestamp) {
+      const interval = 1000 / currentFps;
+      if (timestamp - lastFrameTime >= interval) {
+        drawFigure(walkFrames[frameIndex % walkFrames.length]);
+        frameIndex++;
+        lastFrameTime = timestamp;
+      }
+      animFrameId = requestAnimationFrame(animateFigure);
+    }
+
+    function setFps(fps) {
+      currentFps = fps;
+      frameIndex = 0;
+      lastFrameTime = 0;
+      document.getElementById('btn12fps').classList.toggle('active', fps === 12);
+      document.getElementById('btn24fps').classList.toggle('active', fps === 24);
+      const label = document.getElementById('fpsLabel');
+      if (label) {
+        label.textContent = fps === 12
+          ? '12fps — Choppy. Human. You see every decision.'
+          : '24fps — Smooth. Frictionless. AI-perfect.';
+      }
+    }
+
+    // Start animation when canvas is visible
+    if (fpsCanvas) {
+      requestAnimationFrame(animateFigure);
+    }
   </script>
 
 </body>
