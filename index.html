@@ -1892,264 +1892,212 @@
     ========================================================== */
     @media (max-width: 900px) {
 
-      /* ---- ROOT / GLOBAL ---- */
-      :root { --header-h: 120px; } /* fallback — overridden by JS below */
+      /* =======================================================
+         MOBILE ARCHITECTURE:
+         - Timeline keeps height:100vh + horizontal scroll snap
+           (this is the ONLY way scroll snapping works on real devices)
+         - Each panel is 100vw × 100vh, scrolls INTERNALLY (overflow-y:auto)
+         - Vertical scroll inside panel, horizontal swipe between panels
+         - All desktop overflow:hidden overridden to allow internal scroll
+         - Glass card ::before hidden, replaced with in-flow containers
+         - No hover states — replaced with always-visible / :active
+      ======================================================= */
 
-      html, body { overflow-x: hidden; overflow-y: auto; }
+      :root { --header-h: 120px; } /* fallback, JS overrides with real value */
+
+      html, body {
+        overflow: hidden; /* body never scrolls — timeline handles everything */
+        height: 100%;
+      }
 
       /* ---- HEADER ---- */
       header {
-        padding: 0.75rem 1rem;
+        padding: 0.6rem 1rem;
         grid-template-columns: 1fr;
         grid-template-rows: auto auto auto;
-        gap: 0.5rem;
+        gap: 0.35rem;
         justify-items: center;
       }
-
       header > div:first-child { justify-self: center; text-align: center; }
       #scenarioToggle { justify-self: center; }
       .header-right { justify-self: center; }
+      .project-title { font-size: 1rem; letter-spacing: 0.08em; }
+      .team-names { font-size: 0.62rem; }
+      .toggle-btn { font-size: 0.65rem; padding: 0.4rem 0.75rem; }
 
-      .project-title { font-size: 1.1rem; letter-spacing: 0.1em; }
-      .team-names { font-size: 0.65rem; }
+      /* ---- TIMELINE — keep fixed height for scroll snap to work ---- */
+      .timeline {
+        height: 100vh;       /* MUST stay 100vh for snap to work on real devices */
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x;
+        align-items: stretch;
+      }
 
-      .toggle-btn { font-size: 0.68rem; padding: 0.45rem 0.85rem; }
-
-      /* ---- NAV ARROWS — keep visible on mobile, JS handles first/last hiding ---- */
+      /* ---- NAV ARROWS — smaller on mobile ---- */
       .nav-arrow {
-        width: 2.25rem;   /* slightly smaller for mobile */
-        height: 2.25rem;
-        font-size: 0.95rem;
+        width: 2rem;
+        height: 2rem;
+        font-size: 0.9rem;
       }
 
       /* ---- NAV DOTS ---- */
-      .nav-dots { bottom: 1rem; gap: 0.5rem; }
-      .nav-dot { width: 7px; height: 7px; }
+      .nav-dots { bottom: 0.75rem; gap: 0.5rem; }
+      .nav-dot { width: 6px; height: 6px; }
 
       /* ---- INTRO PANEL ---- */
       .panel-intro {
-        padding: calc(var(--header-h) + 1.5rem) 1.5rem 2rem;
+        padding: calc(var(--header-h) + 2rem) 1.5rem 2rem;
+        min-width: 100vw;
+        height: 100vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
       }
+      .panel-intro h1 { font-size: clamp(2.5rem, 12vw, 4.5rem); }
+      .panel-intro .subtitle { font-size: 0.82rem; }
+      .scroll-hint { font-size: 0.6rem; bottom: 2rem; }
 
-      .panel-intro h1 { font-size: clamp(2.8rem, 14vw, 5rem); }
-      .panel-intro .subtitle { font-size: 0.85rem; }
-      .scroll-hint { font-size: 0.62rem; bottom: 2.5rem; }
-
-      /* ---- YEAR PANELS — expand to content on mobile ---- */
+      /* ---- YEAR PANELS — 100vw × 100vh, scroll internally ---- */
       .panel-year {
-        /* Natural height — grows with content, minimum is full screen */
-        min-height: 100vh;
-        height: auto !important;
-        /* Padding: top clears fixed header, sides clear nothing (arrows hidden) */
-        padding: calc(var(--header-h) + 1.5rem) 1.25rem 2.5rem !important;
-        overflow-y: visible !important;
+        min-width: 100vw;
+        width: 100vw;
+        height: 100vh;
+        overflow-y: auto !important;  /* internal vertical scroll */
         overflow-x: hidden;
-        justify-content: flex-start !important; /* year-header always at same top position */
+        -webkit-overflow-scrolling: touch;
+        padding: calc(var(--header-h) + 1.5rem) 1.25rem 3rem;
         display: flex;
         flex-direction: column;
+        justify-content: flex-start;
+        align-items: stretch;
+        scroll-snap-align: start;
       }
 
-      /* Hide the absolute ::before glass card — replace with in-flow wrapper below */
-      .panel-year::before {
-        display: none !important;
-      }
+      /* Hide absolute ::before glass card on mobile */
+      .panel-year::before { display: none !important; }
 
-      /* In-flow glass card that wraps year-header + scenario-content */
+      /* Year header: glass top half */
       .year-header {
+        flex-shrink: 0;
+        font-size: 1.2rem;
+        letter-spacing: 0.12em;
+        margin-bottom: 0;
+        padding: 0.9rem 1rem 0.7rem;
         background: var(--glass-bg);
         backdrop-filter: var(--glass-blur);
         -webkit-backdrop-filter: var(--glass-blur);
         border: 1.5px solid var(--glass-border);
-        box-shadow: var(--glass-shadow), var(--glass-inner);
-        border-radius: 1.25rem 1.25rem 0 0;
-        padding: 1rem 1.25rem 0.75rem;
-        margin: 0;
-        font-size: 1.3rem;
-        letter-spacing: 0.15em;
+        border-radius: 1rem 1rem 0 0;
+        box-shadow: var(--glass-shadow);
         position: relative;
         z-index: 2;
-        flex-shrink: 0;
       }
+      .year-header::after { display: none; }
 
-      /* Remove the ::after rule on year-header (the orange underline bar) */
-      .year-header::after {
-        display: none;
-      }
-
-      /* scenario-content: in-flow glass card body, expands freely */
+      /* Scenario content: glass bottom half, expands with content */
       .scenario-content.active {
         display: flex !important;
         flex-direction: column !important;
         overflow: visible !important;
         height: auto !important;
         min-height: unset !important;
+        padding: 1rem 1rem 1.5rem;
         background: var(--glass-bg);
         backdrop-filter: var(--glass-blur);
         -webkit-backdrop-filter: var(--glass-blur);
         border: 1.5px solid var(--glass-border);
-        border-top: none; /* joins seamlessly with year-header */
-        box-shadow: var(--glass-shadow), var(--glass-inner);
-        border-radius: 0 0 1.25rem 1.25rem;
-        padding: 1rem 1.25rem 1.5rem;
+        border-top: none;
+        border-radius: 0 0 1rem 1rem;
+        box-shadow: var(--glass-shadow);
         position: relative;
         z-index: 2;
         gap: 1rem;
       }
 
-      /* ---- PANE CONTENT — natural flow ---- */
+      /* Panes stack vertically */
       .pane-content {
         width: 100%;
         flex: none;
         padding-right: 0;
-        min-height: unset;
       }
-
-      .pane-content-header { margin-bottom: 0.5rem; }
-
+      .pane-content-header { margin-bottom: 0.4rem; }
       .pane-content-body {
         overflow: visible !important;
         flex: none;
         height: auto;
         padding-right: 0;
       }
-
       .pane-content-body h2,
       .pane-content-header h2 {
-        font-size: clamp(1.4rem, 5vw, 2rem) !important;
+        font-size: clamp(1.3rem, 4.5vw, 1.9rem) !important;
       }
-
-      .pane-content-body p { font-size: 0.82rem; line-height: 1.65; }
-
+      .pane-content-body p { font-size: 0.8rem; line-height: 1.6; }
       .pane-media {
         width: 100%;
         flex: none;
-        padding-left: 0;
-        padding-top: 0.75rem;
+        padding: 0.5rem 0 0;
         height: auto;
         position: static;
       }
 
-      /* Year label watermark — keep it but reposition */
-      .year-label {
-        position: absolute;
-        z-index: 1;
+      /* ---- TEAM PANEL ---- */
+      .panel-team .year-header {
+        /* same glass top as other panels */
       }
-
-      /* ---- IFRAME PREVIEW — always show badge (no hover on mobile) ---- */
-      .iframe-preview { min-height: 200px; cursor: pointer; }
-
-      .iframe-preview-badge {
-        /* Always visible on mobile — no hover needed */
-        opacity: 1;
-        bottom: 0.5rem;
-        right: 0.5rem;
-        font-size: 0.58rem;
-        padding: 0.25rem 0.6rem;
-      }
-
-      /* Touch feedback instead of hover scale */
-      .iframe-preview:active {
-        transform: scale(0.98);
-        box-shadow: 0 4px 20px rgba(255,82,0,0.3);
-      }
-
-      /* ---- IFRAME MODAL — full screen on mobile ---- */
-      .iframe-modal-card {
-        width: 100vw;
-        max-width: 100vw;
-        height: 100dvh;
-        border-radius: 0;
-      }
-
-      .iframe-modal-header {
-        padding: 0.65rem 1rem;
-      }
-
-      .iframe-modal-label { font-size: 0.65rem; }
-
-      /* ---- INTERVIEW QUOTE ---- */
-      .interview-quote { margin-top: 1rem; }
-      .interview-quote blockquote { font-size: 0.82rem; }
-
-      /* ---- MEDIA SLOT ---- */
-      .media-slot { min-height: 200px; }
-
-      /* ---- MEDIA LINK CARD ---- */
-      .media-link-title { font-size: 1.1rem; }
-      .media-link-desc { font-size: 0.75rem; }
-
-      /* Timeline on mobile — allow panels to be taller than viewport */
-      .timeline {
-        overflow-y: visible;
-        height: auto;
-        min-height: 100vh;
-        flex-wrap: nowrap;
-        align-items: flex-start;
-      }
-
-      /* Timeline: horizontal swipe only */
-      .timeline { touch-action: pan-x; }
-
-      /* Panels: allow vertical scroll inside them */
-      .panel-year {
-        overflow-y: auto !important;
-        overflow-x: hidden;
-        touch-action: pan-y;
-        -webkit-overflow-scrolling: touch;
-      }
-
-      /* scenario-content: stack vertically, full natural height, no overflow clip */
-      .scenario-content.active {
-        overflow: visible !important;
-        height: auto !important;
-        min-height: unset;
-        flex-direction: column !important;
-        touch-action: pan-y;
-      }
-
-      /* pane-content-body: natural height, no internal scroll — panel handles it */
-      .pane-content-body {
-        overflow-y: visible !important;
-        flex: none;
-        height: auto;
-        touch-action: pan-y;
-        -webkit-overflow-scrolling: touch;
-      }
-
-      /* closing panel — same in-flow approach as year panels */
-      .panel-closing {
-        min-height: 100vh;
-        height: auto !important;
-        padding: calc(var(--header-h) + 1.5rem) 1.25rem 2.5rem !important;
-        overflow-y: visible !important;
-        overflow-x: hidden;
-        touch-action: pan-y;
-        -webkit-overflow-scrolling: touch;
-        align-items: flex-start;
-        text-align: left;
-        justify-content: flex-start !important;
-        display: flex;
+      .panel-team .team-cards {
         flex-direction: column;
-      }
-
-      .panel-closing::before { display: none !important; }
-      .panel-closing::after  { display: none; }
-
-      .panel-closing > h2 {
-        font-size: clamp(1.4rem, 5.5vw, 2.2rem);
-        margin-bottom: 0;            /* flush join — no gap before closing-body */
+        align-items: center;
+        gap: 1rem;
+        overflow: visible;
+        width: 100%;
+        padding: 1.25rem 1rem 2rem;
         background: var(--glass-bg);
         backdrop-filter: var(--glass-blur);
         -webkit-backdrop-filter: var(--glass-blur);
         border: 1.5px solid var(--glass-border);
-        box-shadow: var(--glass-shadow), var(--glass-inner);
-        border-radius: 1.25rem 1.25rem 0 0;
-        padding: 1rem 1.25rem 0.75rem;
-        width: 100%;
+        border-top: none;
+        border-radius: 0 0 1rem 1rem;
+        box-shadow: var(--glass-shadow);
+        max-width: 100%;
+      }
+      .team-card { width: 100%; max-width: 260px; flex-shrink: 0; }
+
+      /* ---- CLOSING PANEL — same internal scroll approach ---- */
+      .panel-closing {
+        min-width: 100vw;
+        width: 100vw;
+        height: 100vh;
+        overflow-y: auto !important;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        padding: calc(var(--header-h) + 1.5rem) 1.25rem 3rem !important;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: stretch;
+        text-align: left;
+        scroll-snap-align: start;
+      }
+      .panel-closing::before { display: none !important; }
+      .panel-closing::after  { display: none; }
+
+      .panel-closing > h2 {
+        flex-shrink: 0;
+        font-size: clamp(1.3rem, 5vw, 2rem);
+        margin-bottom: 0;
+        padding: 0.9rem 1rem 0.7rem;
+        background: var(--glass-bg);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1.5px solid var(--glass-border);
+        border-radius: 1rem 1rem 0 0;
+        box-shadow: var(--glass-shadow);
         position: relative;
         z-index: 2;
+        width: 100%;
       }
-
       .closing-body {
         grid-template-columns: 1fr;
         grid-template-rows: auto auto;
@@ -2158,168 +2106,67 @@
         min-height: unset;
         gap: 1rem;
         align-items: start;
+        padding: 1rem 1rem 1.5rem;
         background: var(--glass-bg);
         backdrop-filter: var(--glass-blur);
         -webkit-backdrop-filter: var(--glass-blur);
         border: 1.5px solid var(--glass-border);
         border-top: none;
-        box-shadow: var(--glass-shadow), var(--glass-inner);
-        border-radius: 0 0 1.25rem 1.25rem;
-        padding: 1rem 1.25rem 1.5rem;
+        border-radius: 0 0 1rem 1rem;
+        box-shadow: var(--glass-shadow);
         width: 100%;
         z-index: 2;
         position: relative;
-      }
-
-      .closing-body,
-      .closing-text-col {
-        overflow: visible !important;
-        height: auto;
-        min-height: unset;
-        touch-action: pan-y;
-      }
-
-      /* Team panel */
-      .panel-team {
-        touch-action: pan-y;
-        -webkit-overflow-scrolling: touch;
-      }
-      .team-cards { touch-action: pan-y; }
-
-      /* Interview section */
-      .interview-section { touch-action: pan-y; }
-
-      /* ---- TEAM PANEL — in-flow glass card matching other year panels ---- */
-      .panel-team {
-        min-height: 100vh;
-        height: auto !important;
-        padding: calc(var(--header-h) + 1.5rem) 1.25rem 2.5rem !important;
-        overflow-y: visible !important;
-        overflow-x: hidden;
-        justify-content: flex-start !important;
-        display: flex;
-        flex-direction: column;
-        touch-action: pan-y;
-        -webkit-overflow-scrolling: touch;
-      }
-
-      /* team-cards: acts as the glass body — wraps cards in-flow */
-      .panel-team .team-cards {
-        flex-direction: column;
-        align-items: center;
-        gap: 1rem;
-        overflow: visible !important;
-        width: 100%;
         flex: none;
-        /* Glass bottom-half styles — joins with year-header glass top */
-        background: var(--glass-bg);
-        backdrop-filter: var(--glass-blur);
-        -webkit-backdrop-filter: var(--glass-blur);
-        border: 1.5px solid var(--glass-border);
-        border-top: none;
-        box-shadow: var(--glass-shadow), var(--glass-inner);
-        border-radius: 0 0 1.25rem 1.25rem;
-        padding: 1.25rem 1.25rem 2rem;
-        max-width: 100%;
       }
-
-      /* ---- TEAM CARDS — stack, no scroll needed since panel is natural height ---- */
-      .team-cards {
-        flex-direction: column;
-        align-items: center;
-        gap: 1rem;
-        width: 100%;
-        scrollbar-width: none;
+      .closing-text-col { overflow: visible; height: auto; min-height: unset; }
+      .closing-text { font-size: 0.8rem; }
+      .closing-reveal { min-height: auto; padding: 0.9rem 1rem; }
+      .closing-reveal-prompt { display: none; }
+      .closing-reveal-quote {
+        position: static; opacity: 1 !important; transform: none !important;
+        pointer-events: auto; padding: 0;
       }
-      .team-cards::-webkit-scrollbar { display: none; }
-      .team-card { width: 100%; max-width: 280px; flex-shrink: 0; }
-
-      /* ---- CLOSING PANEL body + video col ---- */
-
-      .closing-body {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto; /* text col auto, video col auto — both visible */
-        overflow-y: auto;
-        overflow-x: hidden;
-        gap: 1rem;
-        align-items: start;           /* don't stretch — let each row size to content */
-      }
-
-      .closing-text-col {
-        overflow-y: visible;
-        height: auto;
-        min-height: unset;
-      }
-
-      /* Video col: fully visible, natural height on mobile */
+      .closing-reveal-quote blockquote { font-size: 1rem; }
       .closing-video-col {
-        height: auto !important;
-        min-height: unset;
+        height: auto !important; min-height: unset;
         position: static !important;
-        width: 100%;
-        max-width: 260px;
-        margin: 0 auto;               /* centre the thumbnail */
+        width: 100%; max-width: 240px; margin: 0 auto;
       }
-
-      /* YouTube thumb: restore aspect ratio on mobile */
       .closing-yt-thumb {
         flex: none !important;
         aspect-ratio: 9 / 16;
-        min-height: unset;
-        width: 100%;
+        min-height: unset; width: 100%;
       }
 
-      .closing-text { font-size: 0.82rem; }
-
-      /* Closing reveal — always show quote on mobile (no hover) */
-      .closing-reveal {
-        min-height: auto;
-        padding: 1rem 1.25rem;
-      }
-
-      .closing-reveal-prompt { display: none; }
-
-      .closing-reveal-quote {
-        position: static;
-        opacity: 1 !important;
-        transform: none !important;
-        pointer-events: auto;
-        padding: 0;
-      }
-
-      .closing-reveal-quote blockquote { font-size: 1.1rem; }
-
-      /* FPS widget: side by side on mobile */
-      .fps-toggle-row { justify-content: center; }
-      .fps-btn { font-size: 0.65rem; padding: 0.4rem 0.75rem; }
+      /* ---- IFRAME PREVIEW ---- */
+      .iframe-preview { min-height: 180px; }
+      .iframe-preview-badge { opacity: 1; bottom: 0.4rem; right: 0.4rem; font-size: 0.55rem; }
+      .iframe-preview:active { transform: scale(0.98); }
+      .iframe-modal-card { width: 100vw; max-width: 100vw; height: 100dvh; border-radius: 0; }
+      .iframe-modal-header { padding: 0.6rem 1rem; }
 
       /* ---- INTERVIEW SECTION ---- */
-      .interview-block { padding: calc(var(--header-h) + 1.5rem) 1.25rem 1.5rem; }
-
-      .interview-block::before { inset: calc(var(--header-h) + 0.25rem) 0.5rem 0.5rem; }
-
+      .interview-block { padding: calc(var(--header-h) + 1rem) 1.25rem 1.5rem; }
+      .interview-block::before { inset: calc(var(--header-h) + 0.5rem) 0.5rem 0.5rem; }
       .block-person .block-inner,
-      .block-video .block-inner { grid-template-columns: 1fr; gap: 1.5rem; }
-
-      .person-info h3 { font-size: 1.8rem; }
-      .person-info .person-bio { font-size: 0.82rem; }
-
-      .video-info h3 { font-size: 1.3rem; }
-      .video-info .video-description { font-size: 0.8rem; }
-
-      .block-pullquote blockquote {
-        font-size: clamp(1.3rem, 5vw, 2rem);
-        padding-left: 1rem;
-      }
-
+      .block-video .block-inner { grid-template-columns: 1fr; gap: 1.25rem; }
+      .person-info h3 { font-size: 1.6rem; }
+      .person-info .person-bio { font-size: 0.8rem; }
+      .video-info h3 { font-size: 1.2rem; }
+      .video-info .video-description { font-size: 0.78rem; }
+      .block-pullquote blockquote { font-size: clamp(1.2rem, 4.5vw, 1.8rem); padding-left: 1rem; }
       .perspective-grid { grid-template-columns: 1fr; gap: 0.75rem; }
-      .perspective-card { padding: 1.1rem; }
+      .perspective-card { padding: 1rem; }
 
-      /* ---- SCROLL HINT ---- */
-      .interview-scroll-hint { font-size: 0.6rem; padding: 0.35rem 0.75rem; }
-
-      /* ---- SOURCE LINKS ---- */
-      .source-links a { font-size: 0.68rem; }
+      /* ---- MISC ---- */
+      .interview-quote blockquote { font-size: 0.8rem; }
+      .media-slot { min-height: 180px; }
+      .media-link-title { font-size: 1rem; }
+      .source-links a { font-size: 0.65rem; }
+      .fps-toggle-row { justify-content: center; }
+      .fps-btn { font-size: 0.63rem; padding: 0.38rem 0.7rem; }
+      .interview-scroll-hint { font-size: 0.58rem; padding: 0.3rem 0.7rem; }
     }
 
     /* Extra small — very narrow phones */
