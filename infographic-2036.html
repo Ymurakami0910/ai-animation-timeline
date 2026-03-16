@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The AI Revolution in Motion Graphics & Animation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0d0d0d;
+      color: #fff;
+      min-height: 100vh;
+      padding: 1.25rem;
+    }
+
+    /* Title */
+    .infographic-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(1.3rem, 3vw, 2rem);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      text-align: center;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+      color: #fff;
+    }
+
+    /* Two-column grid */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    /* Cards */
+    .card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 0.6rem;
+      padding: 0.9rem 1rem;
+    }
+
+    .card-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #fff;
+      margin-bottom: 0.65rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 0.4rem;
+    }
+
+    /* ---- MARKET STATS ---- */
+    .stat-block {
+      margin-bottom: 0.65rem;
+      padding-bottom: 0.65rem;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .stat-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+    .stat-label {
+      font-size: 0.58rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 0.2rem;
+    }
+
+    .stat-value {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .stat-sub {
+      font-size: 0.6rem;
+      color: rgba(255,255,255,0.55);
+      margin-top: 0.15rem;
+    }
+
+    /* Sparkline / growth bar */
+    .growth-bar {
+      height: 3px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      margin-top: 0.4rem;
+      overflow: hidden;
+    }
+    .growth-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.3), #fff);
+    }
+
+    /* ---- CHART BARS ---- */
+    .chart-row {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 0.35rem;
+    }
+    .chart-row:last-child { margin-bottom: 0; }
+
+    .chart-label {
+      flex: 0 0 42%;
+      font-size: 0.58rem;
+      color: rgba(255,255,255,0.75);
+      line-height: 1.2;
+      text-align: right;
+      padding-right: 0.25rem;
+    }
+
+    .chart-bar-wrap {
+      flex: 1 1 0;
+      height: 10px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .chart-bar-fill {
+      height: 100%;
+      background: #fff;
+      border-radius: 2px;
+      opacity: 0.85;
+    }
+
+    .chart-pct {
+      font-size: 0.58rem;
+      color: rgba(255,255,255,0.6);
+      flex-shrink: 0;
+      width: 2rem;
+      text-align: left;
+    }
+
+    /* ---- OPPORTUNITIES / CHALLENGES ---- */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+    }
+
+    .sub-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 0.45rem;
+      padding: 0.6rem 0.7rem;
+    }
+
+    .sub-card-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #fff;
+      margin-bottom: 0.35rem;
+    }
+
+    .sub-item {
+      font-size: 0.58rem;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.5;
+      margin-bottom: 0.2rem;
+    }
+    .sub-item strong { color: rgba(255,255,255,0.9); }
+
+    /* ---- KEY TAKEAWAYS ---- */
+    .takeaway-row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .takeaway-item {
+      flex: 1 1 0;
+      min-width: 80px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 0.45rem;
+      padding: 0.5rem 0.6rem;
+      text-align: center;
+      font-size: 0.6rem;
+      color: rgba(255,255,255,0.75);
+      line-height: 1.4;
+    }
+
+    .takeaway-icon {
+      font-size: 1rem;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    .takeaway-item strong {
+      display: block;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #fff;
+      margin-bottom: 0.15rem;
+    }
+
+    /* Footer */
+    .infographic-footer {
+      font-size: 0.5rem;
+      color: rgba(255,255,255,0.3);
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-top: 0.75rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+
+    /* Span full width */
+    .full-width { grid-column: 1 / -1; }
+  </style>
+</head>
+<body>
+
+  <div class="infographic-title">The AI Revolution in<br>Motion Graphics &amp; Animation</div>
+
+  <div class="grid">
+
+    <!-- LEFT: Market Growth -->
+    <div class="card">
+      <div class="card-title">Global Market Growth</div>
+
+      <div class="stat-block">
+        <div class="stat-label">Global Animation Market</div>
+        <div class="stat-value">$587.36B</div>
+        <div class="stat-sub">by 2026 · CAGR 20.3% (2022–2030)</div>
+        <div class="growth-bar"><div class="growth-bar-fill" style="width:85%"></div></div>
+      </div>
+
+      <div class="stat-block">
+        <div class="stat-label">Generative AI in Animation</div>
+        <div class="stat-value">$15.9B</div>
+        <div class="stat-sub">by 2030 · CAGR 39.8% (2024–2030)</div>
+        <div class="growth-bar"><div class="growth-bar-fill" style="width:70%"></div></div>
+      </div>
+
+      <div class="stat-block">
+        <div class="stat-label">Mobile Video Animation</div>
+        <div class="stat-value">25.5%</div>
+        <div class="stat-sub">Steady annual growth</div>
+        <div class="growth-bar"><div class="growth-bar-fill" style="width:55%"></div></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Job Impact -->
+    <div class="card">
+      <div class="card-title">Job Impact &amp; Survey Data</div>
+      <div style="font-size:0.55rem; color:rgba(255,255,255,0.4); margin-bottom:0.5rem; line-height:1.4;">AI impact over next two years — % expecting major impact</div>
+
+      <div class="chart-row">
+        <div class="chart-label">Animator</div>
+        <div class="chart-bar-wrap"><div class="chart-bar-fill" style="width:55%"></div></div>
+        <div class="chart-pct">55%</div>
+      </div>
+      <div class="chart-row">
+        <div class="chart-label">VFX Artist</div>
+        <div class="chart-bar-wrap"><div class="chart-bar-fill" style="width:50%"></div></div>
+        <div class="chart-pct">50%</div>
+      </div>
+      <div class="chart-row">
+        <div class="chart-label">Game Developer</div>
+        <div class="chart-bar-wrap"><div class="chart-bar-fill" style="width:43%"></div></div>
+        <div class="chart-pct">43%</div>
+      </div>
+      <div class="chart-row">
+        <div class="chart-label">Voice Actor</div>
+        <div class="chart-bar-wrap"><div class="chart-bar-fill" style="width:41%"></div></div>
+        <div class="chart-pct">41%</div>
+      </div>
+      <div class="chart-row">
+        <div class="chart-label">Composer</div>
+        <div class="chart-bar-wrap"><div class="chart-bar-fill" style="width:41%"></div></div>
+        <div class="chart-pct">41%</div>
+      </div>
+    </div>
+
+    <!-- FULL: Opportunities & Challenges -->
+    <div class="card full-width">
+      <div class="card-title">Opportunities &amp; Challenges</div>
+      <div class="two-col">
+        <div class="sub-card">
+          <div class="sub-card-title">Opportunities</div>
+          <div class="sub-item"><strong>Creative Focus</strong> — Focus on storytelling</div>
+          <div class="sub-item"><strong>Increased Productivity</strong> — Automation of repetitive tasks</div>
+          <div class="sub-item"><strong>New Tool Workflows</strong> — Complex effects, procedural generation</div>
+        </div>
+        <div class="sub-card">
+          <div class="sub-card-title">Challenges</div>
+          <div class="sub-item"><strong>Role Disruption</strong> — Need for skill adaptation</div>
+          <div class="sub-item"><strong>Ethical Concerns</strong> — Copyright &amp; ownership</div>
+          <div class="sub-item"><strong>Skill Gaps</strong> — Learning new AI tools</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FULL: Key Takeaways -->
+    <div class="card full-width">
+      <div class="card-title">Key Takeaways</div>
+      <div class="takeaway-row">
+        <div class="takeaway-item">
+          <span class="takeaway-icon">📈</span>
+          <strong>Exponential Market Growth</strong>
+          Multi-billion dollar expansion across all segments
+        </div>
+        <div class="takeaway-item">
+          <span class="takeaway-icon">🎯</span>
+          <strong>Major Impact on Core Roles</strong>
+          Animators &amp; VFX artists most affected
+        </div>
+        <div class="takeaway-item">
+          <span class="takeaway-icon">🔧</span>
+          <strong>Adaptive Skills Are Essential</strong>
+          Human creativity + AI tools = competitive edge
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="infographic-footer">
+    Source: HarrisX &nbsp;|&nbsp; Fielded May 2–13, 2024 &nbsp;|&nbsp; U.S. media &amp; entertainment workers 18+ (N=308) &nbsp;|&nbsp; Adaptation
+  </div>
+
+</body>
+</html>
