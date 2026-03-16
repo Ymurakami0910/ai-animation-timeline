@@ -960,7 +960,7 @@
       font-size: 0.95rem;
       line-height: 1.8;
       color: #333333;
-      max-width: 1200px;
+      max-width: 540px;
       font-weight: 400;
       margin-bottom: 0.6rem;
     }
@@ -1330,6 +1330,80 @@
     @media (max-width: 768px) {
       .perspective-grid { grid-template-columns: 1fr; }
     }
+
+    /* ----------------------------------------------------------
+       OVERFLOW FIX: Year panel internal layout
+       Panel is already full-height. We convert it to a strict
+       column layout so the year-header stays pinned at top and
+       the scenario-content area scrolls internally.
+       Card ::before pseudo-element is unchanged.
+    ---------------------------------------------------------- */
+    .panel-year {
+      /* Switch to column so children stack: year-header → scrollable content */
+      display: flex;
+      flex-direction: column;
+      overflow: hidden; /* Panel itself never scrolls */
+    }
+
+    /* Year header: pinned, never pushed by content */
+    .year-header {
+      flex-shrink: 0; /* Never compress or move */
+    }
+
+    /* Scenario content wrapper: takes remaining height, scrolls internally */
+    .scenario-content {
+      flex: 1 1 0;          /* Fill remaining card height */
+      min-height: 0;        /* Required for flex children to shrink below content size */
+      overflow-y: auto;     /* Only this area scrolls */
+      overflow-x: hidden;
+      padding-right: 0.25rem; /* Prevent scrollbar from overlapping text */
+      /* Custom scrollbar — thin, orange, matches design */
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,82,0,0.35) transparent;
+    }
+
+    .scenario-content::-webkit-scrollbar {
+      width: 4px;
+    }
+    .scenario-content::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .scenario-content::-webkit-scrollbar-thumb {
+      background: rgba(255,82,0,0.35);
+      border-radius: 2px;
+    }
+
+    /* ----------------------------------------------------------
+       OVERFLOW FIX: Deep dive two-column layout
+       Left text column is inside the scroll zone.
+       Right media column stays visually fixed — position:sticky
+       keeps it anchored at the top of the scroll container.
+    ---------------------------------------------------------- */
+    .cell-deepdive {
+      height: 100%;        /* Fill the scrollable scenario-content area */
+      align-items: start;  /* Both columns start at top */
+    }
+
+    /* Left text column: normal flow inside scroll zone */
+    .cell-deepdive > div:first-child {
+      min-height: 0;
+    }
+
+    /* Right media column: sticky so it never scrolls away */
+    .cell-deepdive > .media-slot {
+      position: sticky;
+      top: 0;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    /* ----------------------------------------------------------
+       OVERFLOW FIX: Headline cell
+       Single-column — just prevent it from pushing card height
+    ---------------------------------------------------------- */
+    .cell-headline {
+      min-height: 0;
+    }
   </style>
 </head>
 <body>
@@ -1349,7 +1423,7 @@
   <header>
     <div>
       <!-- CHANGED: Topic updated to AI in Animation -->
-      <div class="project-title">What's Next? — AI in Animation Movie</div>
+      <div class="project-title">What's Next? — AI in Animation</div>
       <div class="team-names">Jappan · Tyler · Yuri · BCIT · 2025</div>
     </div>
     <div class="header-right">
@@ -1388,7 +1462,7 @@
     <!-- ---- INTRO PANEL ---- -->
     <!-- UPDATED: No glass container on intro — text sits directly on gradient -->
     <section class="panel-intro" data-panel="0">
-      <h1>AI &amp; the Future of<br><span>Animation Movie</span></h1>
+      <h1>AI &amp; the Future of<br><span>Animation</span></h1>
       <div class="intro-rule"></div>
       <p class="subtitle">
         How artificial intelligence is reshaping storytelling, production pipelines,
@@ -1719,6 +1793,9 @@
             linkedin.com/in/justinmarmulak ↗
           </a>
           <p class="person-bio">
+            Production Coordinator, Netflix Animation | Conference Co-Chair, Spark Animation
+          </p>
+          <p class="person-bio">
             Justin is a seasoned production professional currently navigating the intersection of lots of talents at Netflix Animation. With a background deeply rooted in the "artist-first" philosophy, he oversees complex production workflows and serves as a leadership figure.
           </p>
           <p class="person-bio">
@@ -1731,16 +1808,35 @@
       </div>
     </div>
 
-    <!-- Video clip -->
+    <!-- Video clip — UPDATED: replaced video embed with interview thumbnail image linking to Otter.ai transcript -->
     <div class="interview-block block-video">
       <div class="block-inner">
-        <!-- CHANGED: Video slot ready for iframe/video embed -->
-        <div class="video-slot">
-          <div class="slot-label">Interview Clip</div>
-          <p>Embed your interview video here.<br><br>
-          Replace this block with:<br>
-          <code style="font-size:0.65rem; opacity:0.6;">&lt;iframe src="your-video-url"&gt;&lt;/iframe&gt;</code><br><br>
-          Works with YouTube, Vimeo, or a direct &lt;video&gt; file.</p>
+        <!-- UPDATED: Image replaces video player — acts as clickable link to transcript -->
+        <div class="video-slot" style="padding:0; overflow:hidden;">
+          <a href="https://otter.ai/u/4hwEDo549Wyo0-j3e-uR_KRIzL4?tab=chat&view=summary"
+             target="_blank"
+             rel="noopener"
+             style="display:block; width:100%; height:100%; position:relative;">
+            <img src="interview-thumbnail.png"
+                 alt="Justin Marmulak Interview — click to view transcript"
+                 style="width:100%; height:100%; object-fit:cover; border-radius:0.5rem; display:block;">
+            <!-- Play-style overlay label -->
+            <span style="
+              position:absolute; bottom:1rem; left:50%; transform:translateX(-50%);
+              background:rgba(255,82,0,0.88);
+              color:#fff;
+              font-family:'Inter',sans-serif;
+              font-size:0.7rem;
+              font-weight:700;
+              letter-spacing:0.1em;
+              text-transform:uppercase;
+              padding:0.35rem 0.9rem;
+              border-radius:2rem;
+              white-space:nowrap;
+              pointer-events:none;">
+              View Transcript ↗
+            </span>
+          </a>
         </div>
         <div class="video-info">
           <h3>Justin on AI &amp; the Future of Animation</h3>
@@ -1749,6 +1845,31 @@
             production timelines at Netflix Animation — from pre-visualization to rendering —
             and shares his prediction that audiences will ultimately gravitate toward
             animation made with genuine human vision, even as AI-generated content scales.
+          </p>
+          <!-- ADDED: CTA to Otter.ai transcript — easier than watching the full 25min interview -->
+          <a href="https://otter.ai/u/4hwEDo549Wyo0-j3e-uR_KRIzL4?tab=chat&view=summary"
+             target="_blank"
+             rel="noopener"
+             style="
+               display:inline-flex;
+               align-items:center;
+               gap:0.4rem;
+               margin-top:1.25rem;
+               padding:0.55rem 1.2rem;
+               background:var(--color-accent);
+               color:#fff;
+               font-family:'Inter',sans-serif;
+               font-size:0.78rem;
+               font-weight:700;
+               letter-spacing:0.05em;
+               text-transform:uppercase;
+               text-decoration:none;
+               border-radius:2rem;
+               transition:opacity 0.2s;">
+            Read the Interview Transcript ↗
+          </a>
+          <p style="margin-top:0.65rem; font-size:0.72rem; color:#666; line-height:1.5;">
+            Skip the 25-min video — the AI transcript summary on Otter.ai gives you the key insights in minutes.
           </p>
         </div>
       </div>
