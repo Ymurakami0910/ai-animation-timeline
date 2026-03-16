@@ -953,7 +953,6 @@
       font-weight: 900;
       letter-spacing: 0.07em;
       margin-bottom: 1.5rem;
-      max-width: 800px;
       line-height: 1.05;
       text-transform: uppercase;
       color: #111111;
@@ -967,7 +966,7 @@
     .panel-closing .closing-text {
       font-size: 1rem;
       color: #333333;
-      max-width: 520px;
+      max-width:800px;
       line-height: 1.8;
       font-weight: 400;
       position: relative;
@@ -1577,10 +1576,12 @@
       font-weight: 400;
     }
 
-    /* Hover-reveal quote block */
+    /* Hover-reveal quote block — FIX 4: min-height + overflow:visible fix hover */
     .closing-reveal {
-      margin-top: 1rem;
+      margin-top: 0.5rem;
       padding: 1.25rem 1.5rem;
+      min-height: 90px;
+      flex-shrink: 0;
       background: rgba(255,255,255,0.45);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
@@ -1588,7 +1589,7 @@
       border-radius: 0.75rem;
       cursor: default;
       position: relative;
-      overflow: hidden;
+      overflow: visible; /* FIX 4: was hidden — clipped the absolute-positioned quote */
       transition: border-color 0.3s ease;
     }
 
@@ -1675,8 +1676,9 @@
     .closing-yt-img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain; /* FIX 3: was cover — contain shows full image */
       display: block;
+      background: #111;
     }
 
     /* Dark overlay + play icon */
@@ -1763,6 +1765,7 @@
     .scenario-content {
       flex: 1 1 0;
       min-height: 0;
+      /* FIX: do NOT set overflow:hidden here — pane-content-body handles it */
     }
 
     /* Closing panel: same flex-column pattern */
@@ -1782,44 +1785,86 @@
       margin-bottom: 1.5rem;
     }
 
+    /* CLOSING SECTION HEIGHT FIX:
+       closing-body fills all remaining panel height (flex:1 1 0).
+       align-items:stretch makes both columns same height as the grid row.
+       Left text col scrolls within that height.
+       Right media col fills naturally — no cropping. */
     .closing-body {
       flex: 1 1 0;
       min-height: 0;
       display: grid;
-      grid-template-columns: 1fr 260px;
+      grid-template-columns: 1fr 220px;
+      grid-template-rows: 1fr;      /* single row fills all available height */
       gap: 2.5rem;
-      align-items: start;
+      align-items: stretch;         /* both cols grow to same height */
       width: 100%;
       max-width: 1200px;
       position: relative;
       z-index: 1;
-      overflow: hidden;
+      overflow: visible;
     }
 
+    /* Left text col: height:100% ensures it fills its grid cell, then scrolls */
     .closing-text-col {
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
-      overflow-y: auto;
-      height: 100%;
+      height: 100%;                 /* fill full grid row height */
       min-height: 0;
+      overflow-y: auto;
       scrollbar-width: thin;
       scrollbar-color: rgba(255,82,0,0.3) transparent;
       padding-right: 0.5rem;
+      padding-bottom: 1.5rem;
     }
 
     .closing-text-col::-webkit-scrollbar { width: 3px; }
     .closing-text-col::-webkit-scrollbar-track { background: transparent; }
     .closing-text-col::-webkit-scrollbar-thumb { background: rgba(255,82,0,0.3); border-radius: 2px; }
 
+    /* Right media col: fills grid cell height — no sticky/start so it stretches */
     .closing-video-col {
-      position: sticky;
-      top: 0;
-      align-self: start;
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
+      height: 100%;                 /* fills grid row height to match left col */
       flex-shrink: 0;
+      /* removed position:sticky / align-self:start — those prevented stretching */
+    }
+
+    /* YouTube thumb: fill the video col, no cropping */
+    .closing-yt-thumb {
+      flex: 1 1 0;                  /* fills available height in the flex column */
+      min-height: 0;
+      position: relative;
+      width: 100%;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      /* removed fixed aspect-ratio — height now driven by available space */
+    }
+
+    /* FIX 3: thumbnail — object-fit:contain so the full image is visible.
+       background:#000 fills the letterbox gap. Overrides the earlier cover rule. */
+    .closing-yt-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain !important;  /* never crop — full image always visible */
+      display: block;
+      background: #111;               /* dark letterbox behind contained image */
+    }
+
+    /* FIX 4: closing-reveal hover fixed.
+       - min-height: 90px guarantees the box is large enough to hover
+       - flex-shrink: 0 prevents flex column from squishing it
+       - overflow: visible on the outer box so absolute quote isn't clipped
+       - The inner .closing-reveal-quote uses inset:0 which needs the parent
+         to have position:relative (already set) and enough height */
+    .closing-reveal {
+      min-height: 90px;
+      flex-shrink: 0;
+      overflow: visible;  /* FIX: was hidden — was clipping the revealed quote */
     }
 
     @media (max-width: 768px) {
@@ -1837,7 +1882,7 @@
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
-      align-items: center;
+      align-items: left;
       width: 100%;
     }
 
@@ -2266,46 +2311,38 @@
 
     <!-- ---- CLOSING PANEL ---- -->
     <section class="panel-closing" data-panel="5">
-      <h2>Where Does the <span>Soul</span> of Animation Lie?</h2>
+      <h2>Where Does the <span>Soul</span> <br>of Animation Lie?</h2>
       <div class="closing-body">
 
-        <!-- Left: text + hover-reveal -->
+        <!-- Left: text + fps widget + hover-reveal -->
         <div class="closing-text-col">
-          <p class="closing-text"><strong>AI pursues the "ideal."</strong> Perfectly smooth 24fps — optimized, frictionless, data-perfect.</p>
-          <p class="closing-text">But sometimes <strong>12fps is the human experience.</strong> In Spider-Verse, Miles Morales starts choppy — <strong>you see every decision.</strong> That roughness isn't a bug. It's the soul.</p>
+          <p class="closing-text"><p>While AI can optimize rendering and generate perfectly smooth 24fps sequences,</p>
+          <p>"sometimes 12fps is the <strong>human experience</strong> because you're seeing the decisions”, as Justin pointed out. </p>
+          <p class="closing-text">In Spider-Verse, Miles Morales starts choppy, that roughness isn't a bug. It's the soul.</p>
           <p class="closing-text">Human animators use <strong>"imperfection" to reflect human experience.</strong> AI tends to overlook the emotional truth in clumsiness, roughness, and rawness.</p>
-          <p class="closing-text">When AI handles the <em>method</em>, <strong>"why"</strong> becomes everything.</p>
-                  <div class="closing-video-col">
-          <!-- FPS TOGGLE WIDGET -->
-          <div class="fps-widget">
-            <div class="fps-toggle-row">
-              <button class="fps-btn active" id="btn12fps" onclick="setFps(12)">12fps — Human</button>
-              <button class="fps-btn" id="btn24fps" onclick="setFps(24)">24fps — AI</button>
-            </div>
-            <div class="fps-stage" id="fpsStage">
-              <!-- Spider walking character — pure CSS/SVG animation -->
-              <canvas id="fpsCanvas" width="220" height="220"></canvas>
-            </div>
-            <p class="fps-label" id="fpsLabel">12fps — Choppy. Human. You see every decision.</p>
-          </div>
-          <div class="closing-reveal" id="closingReveal">
-            <div class="closing-reveal-prompt">Hover to reveal →</div>
-            <div class="closing-reveal-quote">
-              <blockquote>"People want to see themselves in the art."</blockquote>
-              <cite>— Justin Marmulak, Netflix Animation</cite>
+          <p style="padding-bottom: 2rem;" class="closing-text">When AI handles the <em>method</em>, <strong>"why"</strong> becomes everything.</p>
+
+          <!-- FPS widget + quote side by side in one row -->
+          <div style="display:grid; grid-template-raw:1fr 1fr; gap:1rem; margin-top:0.5rem; align-items:start;">
+            <!-- Hover-reveal quote -->
+            <div class="closing-reveal" id="closingReveal">
+              <div class="closing-reveal-prompt">Hover to reveal →</div>
+              <div class="closing-reveal-quote">
+                <blockquote>"People want to see themselves in the art."</blockquote>
+                <cite>— Justin Marmulak, Netflix Animation</cite>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Right: Spider-Verse fps toggle interactive -->
-
-          <!-- YouTube link below -->
-          <div class="closing-yt-thumb" style="margin-top:0.75rem;">
+        <!-- Right: YouTube thumbnail only -->
+        <div class="closing-video-col">
+          <div class="closing-yt-thumb">
             <img src="https://img.youtube.com/vi/OwGqajVcCiM/hqdefault.jpg" alt="12fps animation example" class="closing-yt-img">
             <div class="closing-yt-overlay"><div class="closing-yt-play">▶</div></div>
             <a href="https://youtube.com/shorts/OwGqajVcCiM?si=7OmvwK0N8gi4_w1q" target="_blank" rel="noopener" class="closing-yt-btn">Watch on YouTube ↗</a>
           </div>
-          <p class="closing-video-label">Example: 12fps hand-drawn animation</p>
+          <p class="closing-video-label">Example: 12fps hand-drawn animation; human decision</p>
         </div>
 
       </div>
