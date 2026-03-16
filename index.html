@@ -819,6 +819,7 @@
       box-shadow: 0 4px 16px rgba(0,0,0,0.10), var(--glass-inner);
       border-radius: 0.75rem;
       width: 100%;
+      min-height: 320px;      /* ensures iframe wrapper never collapses */
       aspect-ratio: 4 / 3;
       display: flex;
       flex-direction: column;
@@ -2201,9 +2202,9 @@
           </div>
         </div>
         <div class="pane-media">
-<div class="media-slot" style="padding:0; overflow:hidden;">
-  <iframe src="chart-2027.html" style="width:100%; height:100%; border:none; display:block;"></iframe>
-</div>
+          <div class="media-slot" style="padding:0; overflow:hidden; height:100%; min-height:320px;">
+            <iframe src="chart-2027.html" style="width:100%; height:100%; min-height:320px; border:none; display:block;"></iframe>
+          </div>
         </div>
       </div>
 
@@ -2219,9 +2220,9 @@
           </div>
         </div>
         <div class="pane-media">
-<div class="media-slot" style="padding:0; overflow:hidden;">
-  <iframe src="chart-2027.html" style="width:100%; height:100%; border:none; display:block;"></iframe>
-</div>
+          <div class="media-slot" style="padding:0; overflow:hidden; height:100%; min-height:320px;">
+            <iframe src="chart-2027.html" style="width:100%; height:100%; min-height:320px; border:none; display:block;"></iframe>
+          </div>
         </div>
       </div>
     </section>
