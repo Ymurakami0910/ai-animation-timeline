@@ -10,7 +10,7 @@
 
 This is a university group assignment built for BCIT (2025). Instead of a traditional slide deck, we present our research as a horizontally scrolling, interactive timeline — inspired by editorial design and built entirely in a single HTML file.
 
-The project explores three possible futures for AI in animation through the lens of an industry expert interview with **Justin Marmulk**, Production Coordinator at Netflix Animation.
+The project explores three possible futures for AI in animation through the lens of an industry expert interview with **justin marmulak**, Production Coordinator at Netflix Animation.
 
 ---
 
