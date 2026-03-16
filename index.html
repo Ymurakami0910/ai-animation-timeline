@@ -1109,6 +1109,7 @@
       inset: 0;
       background: transparent;
       overflow-y: scroll;
+      overflow-x: hidden;
       scroll-snap-type: y mandatory;
       z-index: 50;
       touch-action: pan-y;
@@ -1929,9 +1930,8 @@
       :root { --header-h: 120px; } /* fallback, JS overrides with real value */
 
       html, body {
-        overflow: hidden;
+        overflow: hidden; /* body never scrolls — timeline handles everything */
         height: 100%;
-        height: 100dvh;
       }
 
       /* ---- HEADER ---- */
@@ -1951,13 +1951,12 @@
 
       /* ---- TIMELINE — keep fixed height for scroll snap to work ---- */
       .timeline {
-        height: 100vh;
-        height: 100dvh;
+        height: 100vh;       /* MUST stay 100vh for snap to work on real devices */
         overflow-x: auto;
         overflow-y: hidden;
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
-        touch-action: pan-x pan-y;
+        touch-action: pan-x;
         align-items: stretch;
       }
 
@@ -1974,15 +1973,11 @@
 
       /* ---- INTRO PANEL ---- */
       .panel-intro {
-        padding: calc(var(--header-h) + 2rem) 1.5rem calc(80px + env(safe-area-inset-bottom, 0px));
+        padding: calc(var(--header-h) + 2rem) 1.5rem 2rem;
         min-width: 100vw;
         height: 100vh;
-        height: 100dvh;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
-        touch-action: pan-y;
-        scroll-snap-align: start;
-        scroll-snap-stop: always;
       }
       .panel-intro h1 { font-size: clamp(2.5rem, 12vw, 4.5rem); }
       .panel-intro .subtitle { font-size: 0.82rem; }
@@ -1993,21 +1988,15 @@
         min-width: 100vw;
         width: 100vw;
         height: 100vh;
-        height: 100dvh;
-        min-height: 100dvh;
-        max-height: 100dvh;
-        overflow-y: auto !important;
+        overflow-y: auto !important;  /* internal vertical scroll */
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
-        touch-action: pan-y;
-        padding: calc(var(--header-h) + 1.5rem) 1.25rem calc(80px + env(safe-area-inset-bottom, 0px));
+        padding: calc(var(--header-h) + 1.5rem) 1.25rem 3rem;
         display: flex;
         flex-direction: column;
         justify-content: flex-start;
         align-items: stretch;
         scroll-snap-align: start;
-        scroll-snap-stop: always;
-        box-sizing: border-box;
       }
 
       /* Hide absolute ::before glass card on mobile */
@@ -2104,22 +2093,16 @@
         min-width: 100vw;
         width: 100vw;
         height: 100vh;
-        height: 100dvh;
-        min-height: 100dvh;
-        max-height: 100dvh;
         overflow-y: auto !important;
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
-        touch-action: pan-y;
-        padding: calc(var(--header-h) + 1.5rem) 1.25rem calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+        padding: calc(var(--header-h) + 1.5rem) 1.25rem 3rem !important;
         display: flex;
         flex-direction: column;
         justify-content: flex-start;
         align-items: stretch;
         text-align: left;
         scroll-snap-align: start;
-        scroll-snap-stop: always;
-        box-sizing: border-box;
       }
       .panel-closing::before { display: none !important; }
       .panel-closing::after  { display: none; }
@@ -2199,6 +2182,14 @@
       .block-pullquote blockquote { font-size: clamp(1.2rem, 4.5vw, 1.8rem); padding-left: 1rem; }
       .perspective-grid { grid-template-columns: 1fr; gap: 0.75rem; }
       .perspective-card { padding: 1rem; }
+
+      /* Zero out margins that cause blank gaps */
+      .panel-year,
+      .panel-closing,
+      .panel-intro {
+        margin: 0 !important;
+        flex-shrink: 0;
+      }
 
       /* ---- MISC ---- */
       .interview-quote blockquote { font-size: 0.8rem; }
@@ -3263,7 +3254,7 @@
         const panelIndex = parseInt(dot.dataset.panel);
         const target = document.querySelector(`[data-panel="${panelIndex}"]`);
         if (target) {
-          target.scrollIntoView({ behavior: 'smooth', inline: 'start' });
+          target.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
           setActivePanel(panelIndex);
         }
       });
@@ -3273,11 +3264,18 @@
     timeline.addEventListener('scroll', () => {
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
-        // Use the first panel's offsetWidth for accuracy on mobile
-        // (window.innerWidth can differ from actual panel width when browser chrome resizes)
-        const panelWidth = timeline.querySelector('[data-panel]')?.offsetWidth || window.innerWidth;
-        const activeIndex = Math.round(timeline.scrollLeft / panelWidth);
-        setActivePanel(activeIndex);
+        // Detect active panel by which one is most visible in the timeline
+        const tlRect = timeline.getBoundingClientRect();
+        const tlCenter = tlRect.left + tlRect.width / 2;
+        let closest = 0;
+        let closestDist = Infinity;
+        panels.forEach((panel, i) => {
+          const r = panel.getBoundingClientRect();
+          const panelCenter = r.left + r.width / 2;
+          const dist = Math.abs(panelCenter - tlCenter);
+          if (dist < closestDist) { closestDist = dist; closest = i; }
+        });
+        setActivePanel(closest);
       }, 80);
     });
 
@@ -3290,10 +3288,10 @@
       if (currentView === 'timeline') {
         if (e.key === 'ArrowRight' && currentPanel < totalPanels - 1) {
           setActivePanel(currentPanel + 1);
-          timeline.scrollBy({ left: window.innerWidth, behavior: 'smooth' });
+          panels[currentPanel].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
         } else if (e.key === 'ArrowLeft' && currentPanel > 0) {
           setActivePanel(currentPanel - 1);
-          timeline.scrollBy({ left: -window.innerWidth, behavior: 'smooth' });
+          panels[currentPanel].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
         }
       }
     });
@@ -3485,18 +3483,16 @@
 
     arrowLeft.addEventListener('click', () => {
       if (currentPanel > 0) {
-        const panelWidth = timeline.querySelector('[data-panel]')?.offsetWidth || window.innerWidth;
         setActivePanel(currentPanel - 1);
-        timeline.scrollBy({ left: -panelWidth, behavior: 'smooth' });
+        panels[currentPanel].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
         updateArrows();
       }
     });
 
     arrowRight.addEventListener('click', () => {
       if (currentPanel < totalPanels - 1) {
-        const panelWidth = timeline.querySelector('[data-panel]')?.offsetWidth || window.innerWidth;
         setActivePanel(currentPanel + 1);
-        timeline.scrollBy({ left: panelWidth, behavior: 'smooth' });
+        panels[currentPanel].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
         updateArrows();
       }
     });
@@ -3530,34 +3526,36 @@
     }
 
 
-    // ── iOS Safari vertical scroll fix ────────────────────────────────────────
+    // ── iOS Safari: intercept vertical scroll inside horizontal timeline ──────
     (function () {
-      var startX = 0, startY = 0, panel = null, locked = null;
+      var startX = 0, startY = 0, activePanel = null, dirLocked = null;
       var tl = document.getElementById('timeline');
       if (!tl) return;
 
       tl.addEventListener('touchstart', function (e) {
         var t = e.touches[0];
-        startX = t.clientX; startY = t.clientY;
-        locked = null;
-        panel = e.target.closest('.panel-year, .panel-closing, .panel-intro');
+        startX = t.clientX;
+        startY = t.clientY;
+        dirLocked = null;
+        activePanel = e.target.closest('.panel-year, .panel-closing, .panel-intro');
       }, { passive: true });
 
       tl.addEventListener('touchmove', function (e) {
-        if (!panel) return;
+        if (!activePanel) return;
         var t = e.touches[0];
         var dx = Math.abs(t.clientX - startX);
         var dy = Math.abs(t.clientY - startY);
-        if (locked === null && (dx > 5 || dy > 5)) locked = dy > dx;
-        if (locked) {
-          panel.scrollTop += startY - t.clientY;
+        if (dirLocked === null && (dx > 5 || dy > 5)) dirLocked = dy > dx;
+        if (dirLocked) {
+          activePanel.scrollTop += startY - t.clientY;
           startY = t.clientY;
           e.preventDefault();
         }
       }, { passive: false });
 
       tl.addEventListener('touchend', function () {
-        locked = null; panel = null;
+        dirLocked = null;
+        activePanel = null;
       }, { passive: true });
     }());
 
