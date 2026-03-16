@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gen AI Impact Chart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: transparent;
+      color: #111;
+      height: 100%;
+      padding: 0;
+    }
+
+    .chart-wrap {
+      width: 100%;
+      height: 100%;
+      padding: 1.25rem 1.5rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    /* Header */
+    .chart-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1rem;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #111;
+      line-height: 1.1;
+      flex-shrink: 0;
+    }
+
+    .chart-subtitle {
+      font-size: 0.65rem;
+      color: #666;
+      letter-spacing: 0.01em;
+      line-height: 1.4;
+      flex-shrink: 0;
+      margin-top: 0.15rem;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1rem;
+      flex-shrink: 0;
+      margin-top: 0.25rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: #444;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .dot.major   { background: #ff5200; }
+    .dot.minor   { background: #ffad85; }
+    .dot.none    { background: #c8c0bb; }
+    .dot.unknown { background: #e8e4de; border: 1px solid #ccc; }
+
+    /* Rows */
+    .rows {
+      flex: 1 1 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.2rem;
+    }
+
+    .chart-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .row-label {
+      flex: 0 0 38%;
+      text-align: right;
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: #333;
+      letter-spacing: 0.01em;
+      line-height: 1.2;
+      padding-right: 0.25rem;
+    }
+
+    .bar-track {
+      flex: 1 1 0;
+      height: 16px;
+      border-radius: 3px;
+      overflow: hidden;
+      display: flex;
+      background: rgba(255,255,255,0.3);
+    }
+
+    .seg {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.9);
+      letter-spacing: 0.02em;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .seg:hover { opacity: 0.82; }
+
+    .seg.major   { background: #ff5200; }
+    .seg.minor   { background: #ffad85; color: rgba(80,30,0,0.7); }
+    .seg.none    { background: #c8c0bb; color: rgba(50,40,40,0.7); }
+    .seg.unknown { background: #ddd8d3; color: rgba(50,40,40,0.5); }
+
+    /* Highlight top 2 rows (Animator + VFX) — most relevant to 2027 */
+    .chart-row.highlight .row-label {
+      color: #ff5200;
+      font-weight: 700;
+    }
+
+    .chart-row.highlight .bar-track {
+      outline: 1.5px solid rgba(255,82,0,0.35);
+      border-radius: 3px;
+    }
+
+    /* Footer */
+    .chart-footer {
+      font-size: 0.55rem;
+      color: #999;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border-top: 1px solid rgba(0,0,0,0.08);
+      padding-top: 0.4rem;
+      flex-shrink: 0;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+<div class="chart-wrap">
+
+  <div class="chart-title">Expected Change to Entertainment Industry Jobs from Gen AI</div>
+  <div class="chart-subtitle">Survey Q: To what extent will generative AI impact the following roles in the next two years?</div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="dot major"></span> Major impact</div>
+    <div class="legend-item"><span class="dot minor"></span> Minor impact</div>
+    <div class="legend-item"><span class="dot none"></span> No impact</div>
+    <div class="legend-item"><span class="dot unknown"></span> Don't know</div>
+  </div>
+
+  <div class="rows" id="rows"></div>
+
+  <div class="chart-footer">Source: HarrisX &nbsp;|&nbsp; Fielded May 2–13, 2024, among U.S. media and entertainment workers 18+ (N=308)</div>
+
+</div>
+
+<script>
+  const data = [
+    { role: "Animator",                  major: 55, minor: 29, none: 10, unknown: 6,  highlight: true  },
+    { role: "Visual effects (VFX) artist", major: 50, minor: 28, none: 16, unknown: 7,  highlight: true  },
+    { role: "Game developer",            major: 43, minor: 31, none: 17, unknown: 9,  highlight: false },
+    { role: "Voice actor",               major: 41, minor: 30, none: 21, unknown: 8,  highlight: false },
+    { role: "Concept/storyboard artist", major: 41, minor: 33, none: 17, unknown: 9,  highlight: false },
+    { role: "Film editor",               major: 37, minor: 36, none: 18, unknown: 9,  highlight: false },
+    { role: "Screenwriter",              major: 36, minor: 36, none: 22, unknown: 6,  highlight: false },
+    { role: "Composer",                  major: 34, minor: 34, none: 23, unknown: 8,  highlight: false },
+    { role: "Cinematographer",           major: 33, minor: 35, none: 23, unknown: 9,  highlight: false },
+    { role: "Sound designer",            major: 29, minor: 43, none: 18, unknown: 10, highlight: false },
+    { role: "Screen actor",              major: 28, minor: 32, none: 27, unknown: 13, highlight: false },
+    { role: "Set designer",              major: 28, minor: 37, none: 24, unknown: 11, highlight: false },
+    { role: "Costume designer",          major: 24, minor: 34, none: 30, unknown: 12, highlight: false },
+    { role: "Camera operator",           major: 23, minor: 39, none: 27, unknown: 11, highlight: false },
+    { role: "Director",                  major: 21, minor: 31, none: 36, unknown: 11, highlight: false },
+    { role: "Makeup artist",             major: 16, minor: 32, none: 42, unknown: 11, highlight: false },
+  ];
+
+  const container = document.getElementById('rows');
+
+  data.forEach(d => {
+    const row = document.createElement('div');
+    row.className = 'chart-row' + (d.highlight ? ' highlight' : '');
+
+    // Only show % label inside segment if wide enough
+    const majorLabel  = d.major  >= 12 ? d.major  + '%' : '';
+    const minorLabel  = d.minor  >= 12 ? d.minor  + '%' : '';
+    const noneLabel   = d.none   >= 12 ? d.none   + '%' : '';
+    const unknownLabel = d.unknown >= 12 ? d.unknown + '%' : '';
+
+    row.innerHTML = `
+      <div class="row-label">${d.role}</div>
+      <div class="bar-track">
+        <div class="seg major"   style="width:${d.major}%"   title="Major impact: ${d.major}%">${majorLabel}</div>
+        <div class="seg minor"   style="width:${d.minor}%"   title="Minor impact: ${d.minor}%">${minorLabel}</div>
+        <div class="seg none"    style="width:${d.none}%"    title="No impact: ${d.none}%">${noneLabel}</div>
+        <div class="seg unknown" style="width:${d.unknown}%" title="Don't know: ${d.unknown}%">${unknownLabel}</div>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+</script>
+</body>
+</html>
