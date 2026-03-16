@@ -8,21 +8,20 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    body {
+    html, body {
       font-family: 'Inter', sans-serif;
       background: transparent;
       color: #111;
-      height: 100%;
+      min-height: 100vh;
       padding: 0;
     }
 
     .chart-wrap {
       width: 100%;
-      height: 100%;
-      padding: 1.25rem 1.5rem 0.75rem;
+      padding: 1rem 1.25rem 0.75rem;
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.4rem;
     }
 
     /* Header */
@@ -34,32 +33,29 @@
       text-transform: uppercase;
       color: #111;
       line-height: 1.1;
-      flex-shrink: 0;
     }
 
     .chart-subtitle {
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       color: #666;
       letter-spacing: 0.01em;
       line-height: 1.4;
-      flex-shrink: 0;
-      margin-top: 0.15rem;
+      margin-top: 0.1rem;
     }
 
     /* Legend */
     .legend {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.6rem 1rem;
-      flex-shrink: 0;
-      margin-top: 0.25rem;
+      gap: 0.4rem 0.9rem;
+      margin-top: 0.1rem;
     }
 
     .legend-item {
       display: flex;
       align-items: center;
       gap: 0.35rem;
-      font-size: 0.62rem;
+      font-size: 0.6rem;
       font-weight: 600;
       color: #444;
       letter-spacing: 0.03em;
@@ -67,8 +63,8 @@
     }
 
     .dot {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       flex-shrink: 0;
     }
@@ -80,24 +76,21 @@
 
     /* Rows */
     .rows {
-      flex: 1 1 0;
-      min-height: 0;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      gap: 0.2rem;
+      gap: 3px;
     }
 
     .chart-row {
       display: flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.5rem;
     }
 
     .row-label {
       flex: 0 0 38%;
       text-align: right;
-      font-size: 0.68rem;
+      font-size: 0.62rem;
       font-weight: 600;
       color: #333;
       letter-spacing: 0.01em;
@@ -107,11 +100,11 @@
 
     .bar-track {
       flex: 1 1 0;
-      height: 16px;
+      height: 13px;
       border-radius: 3px;
       overflow: hidden;
       display: flex;
-      background: rgba(255,255,255,0.3);
+      background: rgba(0,0,0,0.05);
     }
 
     .seg {
@@ -119,7 +112,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 8px;
+      font-size: 7.5px;
       font-weight: 700;
       color: rgba(255,255,255,0.9);
       letter-spacing: 0.02em;
@@ -135,27 +128,19 @@
     .seg.none    { background: #c8c0bb; color: rgba(50,40,40,0.7); }
     .seg.unknown { background: #ddd8d3; color: rgba(50,40,40,0.5); }
 
-    /* Highlight top 2 rows (Animator + VFX) — most relevant to 2027 */
-    .chart-row.highlight .row-label {
-      color: #ff5200;
-      font-weight: 700;
-    }
-
-    .chart-row.highlight .bar-track {
-      outline: 1.5px solid rgba(255,82,0,0.35);
-      border-radius: 3px;
-    }
+    .chart-row.highlight .row-label { color: #ff5200; font-weight: 700; }
+    .chart-row.highlight .bar-track { outline: 1.5px solid rgba(255,82,0,0.35); }
 
     /* Footer */
     .chart-footer {
-      font-size: 0.55rem;
+      font-size: 0.52rem;
       color: #999;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.03em;
       text-transform: uppercase;
       border-top: 1px solid rgba(0,0,0,0.08);
-      padding-top: 0.4rem;
-      flex-shrink: 0;
-      line-height: 1.4;
+      padding-top: 0.35rem;
+      margin-top: 0.25rem;
+      line-height: 1.3;
     }
   </style>
 </head>
