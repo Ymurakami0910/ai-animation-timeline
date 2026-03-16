@@ -343,7 +343,7 @@
       scroll-snap-type: x mandatory;
       scroll-behavior: smooth;
       -webkit-overflow-scrolling: touch;
-      touch-action: pan-x;   /* only claim horizontal gestures — vertical passes through */
+      touch-action: pan-x pan-y;   /* allow both so child panels can scroll vertically */
       position: relative;
       z-index: 1;
     }
@@ -1111,8 +1111,6 @@
       overflow-y: scroll;
       scroll-snap-type: y mandatory;
       z-index: 50;
-      touch-action: pan-y;
-      -webkit-overflow-scrolling: touch;
     }
 
     .interview-section.active { display: block; }
@@ -1955,7 +1953,7 @@
         overflow-y: hidden;
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
-        touch-action: pan-x;
+        touch-action: pan-x pan-y;
         align-items: stretch;
       }
 
@@ -1976,7 +1974,6 @@
         min-width: 100vw;
         height: 100vh;
         overflow-y: auto;
-        touch-action: pan-y;
         -webkit-overflow-scrolling: touch;
       }
       .panel-intro h1 { font-size: clamp(2.5rem, 12vw, 4.5rem); }
@@ -1990,7 +1987,6 @@
         height: 100vh;
         overflow-y: auto !important;  /* internal vertical scroll */
         overflow-x: hidden;
-        touch-action: pan-y;
         -webkit-overflow-scrolling: touch;
         padding: calc(var(--header-h) + 1.5rem) 1.25rem 3rem;
         display: flex;
@@ -2095,7 +2091,6 @@
         width: 100vw;
         height: 100vh;
         overflow-y: auto !important;
-        touch-action: pan-y;
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
         padding: calc(var(--header-h) + 1.5rem) 1.25rem 3rem !important;
@@ -3513,6 +3508,39 @@
       setTimeout(() => { iframeModalFrame.src = ''; }, 300);
       document.body.style.overflow = '';
     }
+
+
+    // ==========================================================
+    // IOS SAFARI VERTICAL SCROLL FIX
+    // Safari ignores child touch-action:pan-y when parent has pan-x.
+    // We manually detect vertical intent and scroll the active panel.
+    // ==========================================================
+    (function() {
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let scrollingPanel = null;
+
+      timeline.addEventListener('touchstart', function(e) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        // Find which panel is under the touch
+        const panel = e.target.closest('.panel-year, .panel-closing, .panel-intro');
+        scrollingPanel = panel || null;
+      }, { passive: true });
+
+      timeline.addEventListener('touchmove', function(e) {
+        if (!scrollingPanel) return;
+        const dx = Math.abs(e.touches[0].clientX - touchStartX);
+        const dy = Math.abs(e.touches[0].clientY - touchStartY);
+        // If clearly vertical gesture, scroll the panel and block timeline
+        if (dy > dx && dy > 8) {
+          const deltaY = touchStartY - e.touches[0].clientY;
+          scrollingPanel.scrollTop += deltaY;
+          touchStartY = e.touches[0].clientY;
+          e.stopPropagation();
+        }
+      }, { passive: true });
+    })();
 
     iframeModalClose.addEventListener('click', closeIframeModal);
     iframeModalBackdrop.addEventListener('click', closeIframeModal);
