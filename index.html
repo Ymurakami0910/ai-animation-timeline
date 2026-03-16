@@ -343,7 +343,7 @@
       scroll-snap-type: x mandatory;
       scroll-behavior: smooth;
       -webkit-overflow-scrolling: touch;
-      touch-action: pan-x pan-y;   /* allow both so child panels can scroll vertically */
+      touch-action: pan-x;   /* only claim horizontal gestures — vertical passes through */
       position: relative;
       z-index: 1;
     }
@@ -1111,6 +1111,8 @@
       overflow-y: scroll;
       scroll-snap-type: y mandatory;
       z-index: 50;
+      touch-action: pan-y;
+      -webkit-overflow-scrolling: touch;
     }
 
     .interview-section.active { display: block; }
@@ -1953,7 +1955,7 @@
         overflow-y: hidden;
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
-        touch-action: pan-x pan-y;
+        touch-action: pan-x;
         align-items: stretch;
       }
 
@@ -2093,7 +2095,7 @@
         overflow-y: auto !important;
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
-        padding: calc(var(--header-h) + 1.5rem) 1.25rem 3rem !important;
+        padding: calc(var(--header-h) + 1.5rem) 1.25rem 6rem !important;
         display: flex;
         flex-direction: column;
         justify-content: flex-start;
@@ -3509,56 +3511,36 @@
       document.body.style.overflow = '';
     }
 
-
     // ==========================================================
     // IOS SAFARI VERTICAL SCROLL FIX
-    // Safari ignores child touch-action:pan-y when parent has pan-x.
-    // We manually detect vertical intent and scroll the active panel.
     // ==========================================================
     (function() {
-      let touchStartX = 0;
-      let touchStartY = 0;
-      let scrollingPanel = null;
+      let startX = 0, startY = 0, panel = null, locked = null;
 
       timeline.addEventListener('touchstart', function(e) {
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-        // Find which panel is under the touch
-        const panel = e.target.closest('.panel-year, .panel-closing, .panel-intro');
-        scrollingPanel = panel || null;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        locked = null;
+        panel = e.target.closest('.panel-year, .panel-closing, .panel-intro');
       }, { passive: true });
 
       timeline.addEventListener('touchmove', function(e) {
-        if (!scrollingPanel) return;
-        const dx = Math.abs(e.touches[0].clientX - touchStartX);
-        const dy = Math.abs(e.touches[0].clientY - touchStartY);
-        // If clearly vertical gesture, scroll the panel and block timeline
-        if (dy > dx && dy > 8) {
-          const deltaY = touchStartY - e.touches[0].clientY;
-          scrollingPanel.scrollTop += deltaY;
-          touchStartY = e.touches[0].clientY;
-          e.stopPropagation();
+        if (!panel) return;
+        const dx = Math.abs(e.touches[0].clientX - startX);
+        const dy = Math.abs(e.touches[0].clientY - startY);
+        if (locked === null && (dx > 4 || dy > 4)) locked = dy > dx;
+        if (locked) {
+          panel.scrollTop += startY - e.touches[0].clientY;
+          startY = e.touches[0].clientY;
+          e.preventDefault();
         }
+      }, { passive: false });
+
+      timeline.addEventListener('touchend', function() {
+        locked = null; panel = null;
       }, { passive: true });
     })();
-  (function() {
-  let touchStartX = 0, touchStartY = 0, scrollingPanel = null;
-  timeline.addEventListener('touchstart', function(e) {
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-    scrollingPanel = e.target.closest('.panel-year, .panel-closing, .panel-intro');
-  }, { passive: true });
-  timeline.addEventListener('touchmove', function(e) {
-    if (!scrollingPanel) return;
-    const dx = Math.abs(e.touches[0].clientX - touchStartX);
-    const dy = Math.abs(e.touches[0].clientY - touchStartY);
-    if (dy > dx && dy > 8) {
-      scrollingPanel.scrollTop += touchStartY - e.touches[0].clientY;
-      touchStartY = e.touches[0].clientY;
-      e.stopPropagation();
-    }
-  }, { passive: true });
-})();
+
     iframeModalClose.addEventListener('click', closeIframeModal);
     iframeModalBackdrop.addEventListener('click', closeIframeModal);
 
