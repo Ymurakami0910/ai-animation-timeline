@@ -66,13 +66,26 @@
 
     /* ----------------------------------------------------------
        BODY / BACKGROUND
-       Changed: richer, more saturated gradient — CN poster palette.
-       Fixed: always fills viewport, nothing overlays it.
+       Base styles + smooth transition between scenario backgrounds.
     ---------------------------------------------------------- */
     html, body {
       height: 100%;
       overflow: hidden;
-      /* CN-inspired vivid multicolor gradient — always fully visible */
+      color: var(--color-text);
+      font-family: var(--font-body);
+      /* Smooth crossfade when scenario background changes */
+      transition: background 0.9s ease;
+    }
+
+    /* ----------------------------------------------------------
+       SCENARIO BACKGROUNDS — controlled by body class
+       JS adds body.optimistic / body.mostlikely / body.pessimistic
+       on toggle. Default (no class) = optimistic.
+    ---------------------------------------------------------- */
+
+    /* OPTIMISTIC: vivid CN multicolor gradient — unchanged, same as before */
+    body,
+    body.optimistic {
       background:
         radial-gradient(ellipse at 5%   5%,   #4ade80 0%,  transparent 40%),
         radial-gradient(ellipse at 95%  5%,   #f472b6 0%,  transparent 40%),
@@ -81,9 +94,46 @@
         radial-gradient(ellipse at 50%  50%,  #60a5fa 0%,  transparent 55%),
         radial-gradient(ellipse at 25%  70%,  #a78bfa 0%,  transparent 38%),
         radial-gradient(ellipse at 75%  30%,  #34d399 0%,  transparent 35%),
-        #e0f0ff; /* Soft blue-white base so gradients always blend bright */
-      color: var(--color-text);
-      font-family: var(--font-body);
+        #e0f0ff;
+    }
+
+    /* MOST LIKELY: soft, professional, low-saturation warm gradient
+       Apple keynote / documentary / clean UI feel */
+    body.mostlikely {
+      background:
+        radial-gradient(ellipse at 10%  10%,  #d4cfc8 0%,  transparent 45%),
+        radial-gradient(ellipse at 90%  15%,  #c8d0d8 0%,  transparent 45%),
+        radial-gradient(ellipse at 85%  88%,  #d6d0c8 0%,  transparent 45%),
+        radial-gradient(ellipse at 15%  85%,  #cdd4d0 0%,  transparent 45%),
+        radial-gradient(ellipse at 50%  50%,  #dbd8d2 0%,  transparent 55%),
+        #e8e4de; /* Warm off-white base */
+    }
+
+    /* PESSIMISTIC: cold blue/cyan dramatic gradient
+       Futuristic / uncertain / dystopian feeling */
+    body.pessimistic {
+      background:
+        radial-gradient(ellipse at 5%   5%,   #1e3a5f 0%,  transparent 45%),
+        radial-gradient(ellipse at 92%  8%,   #0e4d6e 0%,  transparent 42%),
+        radial-gradient(ellipse at 88%  92%,  #163a52 0%,  transparent 45%),
+        radial-gradient(ellipse at 8%   90%,  #0d2d40 0%,  transparent 42%),
+        radial-gradient(ellipse at 50%  50%,  #1a4a6b 0%,  transparent 55%),
+        radial-gradient(ellipse at 30%  60%,  #00a8cc 0%,  transparent 35%),
+        radial-gradient(ellipse at 72%  35%,  #005f7a 0%,  transparent 35%),
+        #0a1e2e; /* Deep dark blue base */
+    }
+
+    /* When pessimistic is active, glass containers need slightly more opacity
+       so dark text stays readable on the darker background */
+    body.pessimistic .panel-year::before,
+    body.pessimistic .panel-closing::before,
+    body.pessimistic .interview-block::before {
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    body.pessimistic .team-card,
+    body.pessimistic .perspective-card {
+      background: rgba(255, 255, 255, 0.70);
     }
 
     /* Removed: grain overlay (doesn't suit bright gradient + glass aesthetic) */
@@ -912,6 +962,24 @@
       color: #333333;
       max-width: 540px;
       font-weight: 400;
+      margin-bottom: 0.6rem;
+    }
+
+    /* LinkedIn link: orange, subtle underline */
+    .person-linkedin {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--color-accent);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid rgba(255,82,0,0.3);
+      transition: border-color 0.2s;
+    }
+
+    .person-linkedin:hover {
+      border-color: var(--color-accent);
     }
 
     /* -- Video block -- */
@@ -1021,37 +1089,36 @@
     }
 
     /* ----------------------------------------------------------
-       FIX 1: HEADER OVERLAP
-       The fixed header is ~72px tall. We use a --header-h variable
-       so every panel clears it consistently.
-       panel-year::before inset-top is pushed down to match.
+       FIX 1: HEADER OVERLAP — stronger fix
+       Increased --header-h to 90px to account for double-line header
+       (title + team names). All panel offsets recalculated.
     ---------------------------------------------------------- */
     :root {
-      --header-h: 72px; /* Match actual rendered header height */
+      --header-h: 90px;
     }
 
-    /* Intro panel: centre vertically in the space below the header */
+    /* Intro panel */
     .panel-intro {
-      padding-top: calc(var(--header-h) + 2rem);
+      padding-top: calc(var(--header-h) + 3rem);
     }
 
-    /* Year panels: enough top padding so glass card clears the header */
+    /* Year panels: extra breathing room so glass card edge never clips header */
     .panel-year {
-      padding-top: calc(var(--header-h) + 2.5rem);
+      padding-top: calc(var(--header-h) + 3rem);
     }
 
-    /* Glass card pseudo-element: top inset must also clear the header */
+    /* Glass card top inset: starts 1.5rem below header bottom */
     .panel-year::before {
-      top: calc(var(--header-h) + 1rem);
+      top: calc(var(--header-h) + 1.5rem);
     }
 
     /* Closing panel */
     .panel-closing {
-      padding-top: calc(var(--header-h) + 2rem);
+      padding-top: calc(var(--header-h) + 3rem);
     }
 
     .panel-closing::before {
-      top: calc(var(--header-h) + 1rem);
+      top: calc(var(--header-h) + 1.5rem);
     }
 
     /* ----------------------------------------------------------
@@ -1175,6 +1242,93 @@
       flex-direction: column;
       gap: 0.3rem;
       align-items: center;
+    }
+    /* ----------------------------------------------------------
+       PERSPECTIVE SECTION — interview data view
+       4 subsection cards in a 2×2 grid, same glass style as other panels
+    ---------------------------------------------------------- */
+
+    /* Full-width inner layout */
+    .perspective-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+      max-width: 1000px;
+      width: 100%;
+    }
+
+    /* Header area: title + subtitle */
+    .perspective-header h3 {
+      font-family: var(--font-heading);
+      font-size: 2.6rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #111111;
+      margin-bottom: 0.4rem;
+    }
+
+    .perspective-subtitle {
+      font-size: 0.9rem;
+      color: #555555;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+    }
+
+    /* 2×2 grid of subsection cards */
+    .perspective-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    /* Individual subsection card — same glass as team cards */
+    .perspective-card {
+      background: rgba(255, 255, 255, 0.50);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1.5px solid rgba(255, 255, 255, 0.65);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8);
+      border-radius: 1rem;
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    /* Small orange label above the title */
+    .perspective-label {
+      font-family: var(--font-body);
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--color-accent);
+    }
+
+    /* Subsection heading */
+    .perspective-title {
+      font-family: var(--font-heading);
+      font-size: 1.5rem;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #111111;
+      margin: 0;
+    }
+
+    /* Body text */
+    .perspective-body {
+      font-size: 0.92rem;
+      line-height: 1.75;
+      color: #333333;
+      font-weight: 400;
+      margin: 0;
+    }
+
+    /* Stack to single column on mobile */
+    @media (max-width: 768px) {
+      .perspective-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -1553,24 +1707,28 @@
     <!-- Person overview -->
     <div class="interview-block block-person">
       <div class="block-inner">
-        <!-- CHANGED: Photo slot ready for a real image — replace <p> with <img src="..."> -->
+        <!-- UPDATED: Justin's actual photo -->
         <div class="person-photo-slot">
-          <div class="slot-label">Photo</div>
-          <p>Add a photo of Justin here.<br><br>
-          Replace this block with:<br>
-          <code style="font-size:0.65rem; opacity:0.6;">&lt;img src="justin.jpg" alt="Justin Marmulk"&gt;</code></p>
+          <img src="Justin.jpeg" alt="Justin Marmulak">
         </div>
         <div class="person-info">
-          <!-- CHANGED: Justin Marmulk's actual details -->
-          <h3>Justin Marmulk</h3>
-          <p class="person-role">Production Coordinator · Netflix Animation</p>
+          <!-- UPDATED: Corrected name, role, LinkedIn, and bio -->
+          <h3>Justin Marmulak</h3>
+          <p class="person-role">Production Coordinator · Netflix Animation Studios</p>
+          <a class="person-linkedin" href="https://www.linkedin.com/in/justinmarmulak/" target="_blank" rel="noopener">
+            linkedin.com/in/justinmarmulak ↗
+          </a>
           <p class="person-bio">
-            Justin Marmulk works as a Production Coordinator at Netflix Animation,
-            where he helps manage the day-to-day logistics of animated film and series production.
-            With a front-row seat to how AI tools are being trialled in real studio pipelines,
-            Justin brings a grounded, practitioner perspective to the debate around automation
-            and creativity in animation — one that balances genuine excitement about efficiency
-            gains with a deep belief in the irreplaceable value of human storytelling.
+            Production Coordinator, Netflix Animation | Conference Co-Chair, Spark Animation
+          </p>
+          <p class="person-bio">
+            Justin is a seasoned production professional currently navigating the intersection of lots of talents at Netflix Animation. With a background deeply rooted in the "artist-first" philosophy, he oversees complex production workflows and serves as a leadership figure.
+          </p>
+          <p class="person-bio">
+            He is actively engaging with a creative community, where he is also known as the Co-Chair for the Spark Animation Conference (where team member Yuri met).
+          </p>
+          <p class="person-bio">
+            Justin is a vocal advocate for the "human touch" in storytelling, focusing on how leadership and emotional intelligence remain the irreplaceable core of the animation industry.
           </p>
         </div>
       </div>
@@ -1604,7 +1762,58 @@
     <div class="interview-block block-pullquote">
       <div class="block-inner">
         <blockquote>"People are going to prefer the other. People want to see themselves in the art."</blockquote>
-        <cite>— Justin Marmulk, Production Coordinator · Netflix Animation</cite>
+        <cite>— Justin Marmulak, Production Coordinator · Netflix Animation Studios</cite>
+      </div>
+    </div>
+
+    <!-- Perspective section — 4 subsections on Justin's outlook -->
+    <div class="interview-block block-perspective">
+      <div class="block-inner perspective-inner">
+
+        <div class="perspective-header">
+          <h3>Perspective</h3>
+          <p class="perspective-subtitle">Justin's outlook on AI in animation — from today through 2030+</p>
+        </div>
+
+        <div class="perspective-grid">
+
+          <!-- Subsection 1: Current Use -->
+          <div class="perspective-card">
+            <div class="perspective-label">Current Use</div>
+            <h4 class="perspective-title">Outlook</h4>
+            <p class="perspective-body">
+              Utilizing AI (Gemini / G Suite) for administrative automation like meeting summaries and email organization.
+            </p>
+          </div>
+
+          <!-- Subsection 2: The 2027 View -->
+          <div class="perspective-card">
+            <div class="perspective-label">The 2027 View</div>
+            <h4 class="perspective-title">Near Future</h4>
+            <p class="perspective-body">
+              Predicting AI use in pre-visualization and temporary audio generation to speed up the iterative process.
+            </p>
+          </div>
+
+          <!-- Subsection 3: The 2030+ Vision -->
+          <div class="perspective-card">
+            <div class="perspective-label">The 2030+ Vision</div>
+            <h4 class="perspective-title">Long Term</h4>
+            <p class="perspective-body">
+              AI as a sophisticated "AB testing" tool for cinematography and lighting, while creative leadership remains human-led.
+            </p>
+          </div>
+
+          <!-- Subsection 4: The Human Factor -->
+          <div class="perspective-card">
+            <div class="perspective-label">The Human Factor</div>
+            <h4 class="perspective-title">Core Belief</h4>
+            <p class="perspective-body">
+              High-end studios like Netflix prioritize auteurs and organic skills to create lasting, emotionally resonant properties.
+            </p>
+          </div>
+
+        </div>
       </div>
     </div>
 
@@ -1631,6 +1840,7 @@
     // ==========================================================
     // SCENARIO TOGGLE — unchanged from template
     // Switches visible content and background tinge across all panels.
+    // ADDED: body class swap for per-scenario background gradient
     // ==========================================================
 
     const root = document.documentElement;
@@ -1642,7 +1852,17 @@
       pessimistic: '#e05f5f'
     };
 
+    // Map scenario name → body CSS class
+    const scenarioBgClass = {
+      optimistic:  'optimistic',
+      likely:      'mostlikely',
+      pessimistic: 'pessimistic'
+    };
+
     let currentScenario = 'likely';
+
+    // Set initial body class to match default scenario (Most Likely)
+    document.body.classList.add(scenarioBgClass[currentScenario]);
 
     toggleBtns.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1665,6 +1885,10 @@
         document.querySelectorAll(`.scenario-content[data-scenario="${scenario}"]`).forEach(el => {
           el.classList.add('active');
         });
+
+        // ADDED: swap body background class for scenario gradient
+        document.body.classList.remove('optimistic', 'mostlikely', 'pessimistic');
+        document.body.classList.add(scenarioBgClass[scenario]);
       });
     });
 
