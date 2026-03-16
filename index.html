@@ -1111,6 +1111,8 @@
       overflow-y: scroll;
       scroll-snap-type: y mandatory;
       z-index: 50;
+      touch-action: pan-y;
+      -webkit-overflow-scrolling: touch;
     }
 
     .interview-section.active { display: block; }
@@ -1974,6 +1976,7 @@
         min-width: 100vw;
         height: 100vh;
         overflow-y: auto;
+        touch-action: pan-y;
         -webkit-overflow-scrolling: touch;
       }
       .panel-intro h1 { font-size: clamp(2.5rem, 12vw, 4.5rem); }
@@ -1987,6 +1990,7 @@
         height: 100vh;
         overflow-y: auto !important;  /* internal vertical scroll */
         overflow-x: hidden;
+        touch-action: pan-y;
         -webkit-overflow-scrolling: touch;
         padding: calc(var(--header-h) + 1.5rem) 1.25rem 3rem;
         display: flex;
@@ -2063,11 +2067,6 @@
         position: static;
       }
 
-      /* Override: year/closing panels must allow vertical touch scroll */
-      .panel-year, .panel-closing, .panel-intro {
-        touch-action: pan-y !important;
-      }
-
       /* ---- TEAM PANEL ---- */
       .panel-team .year-header {
         /* same glass top as other panels */
@@ -2096,6 +2095,7 @@
         width: 100vw;
         height: 100vh;
         overflow-y: auto !important;
+        touch-action: pan-y;
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
         padding: calc(var(--header-h) + 1.5rem) 1.25rem 3rem !important;
