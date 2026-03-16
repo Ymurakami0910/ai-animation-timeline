@@ -1110,7 +1110,6 @@
       background: transparent;
       overflow-y: scroll;
       overflow-x: hidden;
-      scroll-snap-type: y mandatory;
       z-index: 50;
       touch-action: pan-y;
       -webkit-overflow-scrolling: touch;
@@ -1121,7 +1120,6 @@
     /* Interview blocks: transparent, gradient visible at edges */
     .interview-block {
       min-height: 100vh;
-      scroll-snap-align: start;
       display: flex;
       align-items: center;
       padding: 7rem 6rem 4rem;
@@ -1927,7 +1925,7 @@
          - No hover states — replaced with always-visible / :active
       ======================================================= */
 
-      :root { --header-h: 120px; } /* fallback, JS overrides with real value */
+      :root { --header-h: 90px; } /* fallback, JS overrides with real value */
 
       html, body {
         overflow: hidden; /* body never scrolls — timeline handles everything */
@@ -2171,25 +2169,20 @@
       .iframe-modal-header { padding: 0.6rem 1rem; }
 
       /* ---- INTERVIEW SECTION ---- */
-      .interview-block { padding: calc(var(--header-h) + 1rem) 1.25rem 1.5rem; }
-      .interview-block::before { inset: calc(var(--header-h) + 0.5rem) 0.5rem 0.5rem; }
+      .interview-block { padding: calc(var(--header-h) + 0.75rem) 1.25rem 2rem; min-height: unset; }
+      .interview-block::before { inset: calc(var(--header-h) - 0.25rem) 0.5rem 0.5rem; }
       .block-person .block-inner,
-      .block-video .block-inner { grid-template-columns: 1fr; gap: 1.25rem; }
-      .person-info h3 { font-size: 1.6rem; }
-      .person-info .person-bio { font-size: 0.8rem; }
-      .video-info h3 { font-size: 1.2rem; }
-      .video-info .video-description { font-size: 0.78rem; }
-      .block-pullquote blockquote { font-size: clamp(1.2rem, 4.5vw, 1.8rem); padding-left: 1rem; }
-      .perspective-grid { grid-template-columns: 1fr; gap: 0.75rem; }
-      .perspective-card { padding: 1rem; }
-
-      /* Zero out margins that cause blank gaps */
-      .panel-year,
-      .panel-closing,
-      .panel-intro {
-        margin: 0 !important;
-        flex-shrink: 0;
-      }
+      .block-video .block-inner { grid-template-columns: 1fr; gap: 1rem; }
+      /* Shrink photo so bio is visible without scrolling */
+      .person-photo-slot { aspect-ratio: 3 / 2; max-height: 180px; }
+      .person-info h3 { font-size: 1.4rem; }
+      .person-info .person-bio { font-size: 0.78rem; margin-bottom: 0.35rem; }
+      .person-info .person-role { margin-bottom: 0.75rem; }
+      .video-info h3 { font-size: 1.1rem; }
+      .video-info .video-description { font-size: 0.75rem; }
+      .block-pullquote blockquote { font-size: clamp(1.1rem, 4vw, 1.6rem); padding-left: 0.75rem; }
+      .perspective-grid { grid-template-columns: 1fr; gap: 0.6rem; }
+      .perspective-card { padding: 0.85rem; }
 
       /* ---- MISC ---- */
       .interview-quote blockquote { font-size: 0.8rem; }
@@ -3254,7 +3247,7 @@
         const panelIndex = parseInt(dot.dataset.panel);
         const target = document.querySelector(`[data-panel="${panelIndex}"]`);
         if (target) {
-          target.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+          target.scrollIntoView({ behavior: 'smooth', inline: 'start' });
           setActivePanel(panelIndex);
         }
       });
@@ -3264,18 +3257,11 @@
     timeline.addEventListener('scroll', () => {
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
-        // Detect active panel by which one is most visible in the timeline
-        const tlRect = timeline.getBoundingClientRect();
-        const tlCenter = tlRect.left + tlRect.width / 2;
-        let closest = 0;
-        let closestDist = Infinity;
-        panels.forEach((panel, i) => {
-          const r = panel.getBoundingClientRect();
-          const panelCenter = r.left + r.width / 2;
-          const dist = Math.abs(panelCenter - tlCenter);
-          if (dist < closestDist) { closestDist = dist; closest = i; }
-        });
-        setActivePanel(closest);
+        // Use the first panel's offsetWidth for accuracy on mobile
+        // (window.innerWidth can differ from actual panel width when browser chrome resizes)
+        const panelWidth = timeline.querySelector('[data-panel]')?.offsetWidth || window.innerWidth;
+        const activeIndex = Math.round(timeline.scrollLeft / panelWidth);
+        setActivePanel(activeIndex);
       }, 80);
     });
 
@@ -3288,10 +3274,10 @@
       if (currentView === 'timeline') {
         if (e.key === 'ArrowRight' && currentPanel < totalPanels - 1) {
           setActivePanel(currentPanel + 1);
-          panels[currentPanel].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+          timeline.scrollBy({ left: window.innerWidth, behavior: 'smooth' });
         } else if (e.key === 'ArrowLeft' && currentPanel > 0) {
           setActivePanel(currentPanel - 1);
-          panels[currentPanel].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+          timeline.scrollBy({ left: -window.innerWidth, behavior: 'smooth' });
         }
       }
     });
@@ -3483,16 +3469,18 @@
 
     arrowLeft.addEventListener('click', () => {
       if (currentPanel > 0) {
+        const panelWidth = timeline.querySelector('[data-panel]')?.offsetWidth || window.innerWidth;
         setActivePanel(currentPanel - 1);
-        panels[currentPanel].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+        timeline.scrollBy({ left: -panelWidth, behavior: 'smooth' });
         updateArrows();
       }
     });
 
     arrowRight.addEventListener('click', () => {
       if (currentPanel < totalPanels - 1) {
+        const panelWidth = timeline.querySelector('[data-panel]')?.offsetWidth || window.innerWidth;
         setActivePanel(currentPanel + 1);
-        panels[currentPanel].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+        timeline.scrollBy({ left: panelWidth, behavior: 'smooth' });
         updateArrows();
       }
     });
@@ -3526,25 +3514,20 @@
     }
 
 
-    // ── iOS Safari: intercept vertical scroll inside horizontal timeline ──────
+    // ── iOS: vertical scroll inside horizontal timeline ──────────────────────
     (function () {
       var startX = 0, startY = 0, activePanel = null, dirLocked = null;
       var tl = document.getElementById('timeline');
       if (!tl) return;
-
       tl.addEventListener('touchstart', function (e) {
         var t = e.touches[0];
-        startX = t.clientX;
-        startY = t.clientY;
-        dirLocked = null;
+        startX = t.clientX; startY = t.clientY; dirLocked = null;
         activePanel = e.target.closest('.panel-year, .panel-closing, .panel-intro');
       }, { passive: true });
-
       tl.addEventListener('touchmove', function (e) {
         if (!activePanel) return;
         var t = e.touches[0];
-        var dx = Math.abs(t.clientX - startX);
-        var dy = Math.abs(t.clientY - startY);
+        var dx = Math.abs(t.clientX - startX), dy = Math.abs(t.clientY - startY);
         if (dirLocked === null && (dx > 5 || dy > 5)) dirLocked = dy > dx;
         if (dirLocked) {
           activePanel.scrollTop += startY - t.clientY;
@@ -3552,11 +3535,7 @@
           e.preventDefault();
         }
       }, { passive: false });
-
-      tl.addEventListener('touchend', function () {
-        dirLocked = null;
-        activePanel = null;
-      }, { passive: true });
+      tl.addEventListener('touchend', function () { dirLocked = null; activePanel = null; }, { passive: true });
     }());
 
     iframeModalClose.addEventListener('click', closeIframeModal);
