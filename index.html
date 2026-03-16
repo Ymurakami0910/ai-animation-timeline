@@ -322,6 +322,7 @@
       scroll-snap-type: x mandatory;
       scroll-behavior: smooth;
       -webkit-overflow-scrolling: touch;
+      touch-action: pan-x;   /* only claim horizontal gestures — vertical passes through */
       position: relative;
       z-index: 1;
     }
@@ -2027,6 +2028,33 @@
       /* ---- MEDIA LINK CARD ---- */
       .media-link-title { font-size: 1.1rem; }
       .media-link-desc { font-size: 0.75rem; }
+
+      /* ---- TOUCH SCROLLING — vertical swipe works inside content areas ---- */
+
+      /* Panels themselves: horizontal swipe only (timeline handles this) */
+      .panel-year, .panel-closing, .panel-intro {
+        touch-action: pan-x;
+      }
+
+      /* Scrollable content areas: claim vertical swipe */
+      .scenario-content.active,
+      .pane-content-body,
+      .closing-text-col,
+      .closing-body,
+      .panel-team {
+        touch-action: pan-y;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* Team cards list */
+      .team-cards {
+        touch-action: pan-y;
+      }
+
+      /* Interview section */
+      .interview-section {
+        touch-action: pan-y;
+      }
 
       /* ---- TEAM PANEL — override panel-year overflow so cards aren't clipped ---- */
       .panel-team {
