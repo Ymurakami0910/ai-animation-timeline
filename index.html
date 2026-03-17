@@ -1104,6 +1104,9 @@
        Each block has a frosted glass card via ::before.
     ---------------------------------------------------------- */
     .interview-section {
+      /* iOS Safari fix: never use display:none on a scroll container.
+         visibility:hidden keeps the scroll context alive in the DOM.
+         pointer-events:none prevents any interaction when hidden. */
       position: fixed;
       inset: 0;
       width: 100%;
@@ -1111,14 +1114,14 @@
       background: transparent;
       overflow-y: scroll;
       overflow-x: hidden;
-      z-index: 50;
-      touch-action: pan-y;
       -webkit-overflow-scrolling: touch;
-      /* Hidden via visibility+pointer-events so scroll context is always alive */
+      touch-action: pan-y;
+      z-index: 50;
+      /* Hidden state — scroll context stays alive */
       visibility: hidden;
       pointer-events: none;
       opacity: 0;
-      transition: opacity 0.2s ease;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
     }
 
     .interview-section.active {
@@ -1784,20 +1787,11 @@
        .pane-content-body: the ONLY thing that scrolls
     ---------------------------------------------------------- */
 
-    /* Panel: strict column so year-header + scenario-content stack — desktop only */
+    /* Panel: strict column — desktop only */
     @media (min-width: 901px) {
-      .panel-year {
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-      }
+      .panel-year { display: flex; flex-direction: column; overflow: hidden; }
     }
-
-    /* On all sizes: column layout */
-    .panel-year {
-      display: flex;
-      flex-direction: column;
-    }
+    .panel-year { display: flex; flex-direction: column; }
 
     /* Year header never shrinks */
     .year-header { flex-shrink: 0; }
@@ -1809,13 +1803,10 @@
       /* FIX: do NOT set overflow:hidden here — pane-content-body handles it */
     }
 
-    /* Closing panel: same flex-column pattern — desktop only overflow hidden */
+    /* Closing panel — desktop only overflow:hidden */
     @media (min-width: 901px) {
-      .panel-closing {
-        overflow: hidden;
-      }
+      .panel-closing { overflow: hidden; }
     }
-
     .panel-closing {
       display: flex;
       flex-direction: column;
@@ -3269,7 +3260,6 @@
         const panelIndex = parseInt(dot.dataset.panel);
         const target = document.querySelector(`[data-panel="${panelIndex}"]`);
         if (target) {
-          target.scrollTop = 0;
           target.scrollIntoView({ behavior: 'smooth', inline: 'start' });
           setActivePanel(panelIndex);
         }
@@ -3499,6 +3489,7 @@
     arrowLeft.addEventListener('click', () => {
       if (currentPanel > 0) {
         setActivePanel(currentPanel - 1);
+        panels[currentPanel].scrollTop = 0;
         panels[currentPanel].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
         updateArrows();
       }
@@ -3507,6 +3498,7 @@
     arrowRight.addEventListener('click', () => {
       if (currentPanel < totalPanels - 1) {
         setActivePanel(currentPanel + 1);
+        panels[currentPanel].scrollTop = 0;
         panels[currentPanel].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
         updateArrows();
       }
