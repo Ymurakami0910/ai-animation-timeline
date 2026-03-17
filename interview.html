@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interview — Justin Marmulak · What's Next? AI in Animation</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --color-accent: #ff5200;
+      --font-heading: 'Barlow Condensed', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --glass-bg: rgba(255, 255, 255, 0.55);
+      --glass-border: rgba(255, 255, 255, 0.55);
+      --glass-blur: blur(18px);
+      --glass-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);
+      --glass-inner: inset 0 1px 0 rgba(255,255,255,0.8);
+      --header-h: 60px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* Normal page scroll — no overflow:hidden tricks */
+    html, body {
+      min-height: 100%;
+      color: #111;
+      font-family: var(--font-body);
+    }
+
+    /* Same gradient background as main site (mostlikely default) */
+    body {
+      background:
+        radial-gradient(ellipse at 10% 10%, #d4cfc8 0%, transparent 45%),
+        radial-gradient(ellipse at 90% 15%, #c8d0d8 0%, transparent 45%),
+        radial-gradient(ellipse at 85% 88%, #d6d0c8 0%, transparent 45%),
+        radial-gradient(ellipse at 15% 85%, #cdd4d0 0%, transparent 45%),
+        radial-gradient(ellipse at 50% 50%, #dbd8d2 0%, transparent 55%),
+        #e8e4de;
+      background-attachment: fixed;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      height: var(--header-h);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255,255,255,0.65);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1.5px solid rgba(255,255,255,0.7);
+      box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+    }
+
+    .header-back {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      color: var(--color-accent);
+      font-family: var(--font-body);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      transition: opacity 0.2s;
+    }
+    .header-back:hover { opacity: 0.75; }
+    .header-back::before { content: '←'; font-size: 1rem; }
+
+    .header-title {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      color: var(--color-accent);
+      text-transform: uppercase;
+    }
+
+    .header-spacer { width: 80px; } /* balance the back button */
+
+    /* ── PAGE CONTENT ── */
+    main {
+      padding-top: calc(var(--header-h) + 2rem);
+      padding-bottom: 4rem;
+    }
+
+    /* ── INTERVIEW BLOCK ── */
+    .interview-block {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 2rem 0;
+      position: relative;
+    }
+
+    .block-inner {
+      position: relative;
+      z-index: 1;
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1.5px solid var(--glass-border);
+      border-radius: 1.25rem;
+      box-shadow: var(--glass-shadow), var(--glass-inner);
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    /* ── PERSON BLOCK ── */
+    .person-grid {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+
+    .person-photo-slot {
+      background: rgba(255,255,255,0.45);
+      border: 1.5px solid rgba(255,255,255,0.6);
+      border-radius: 0.75rem;
+      aspect-ratio: 3 / 4;
+      overflow: hidden;
+    }
+    .person-photo-slot img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .person-info h3 {
+      font-family: var(--font-heading);
+      font-size: 2.8rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #111;
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+
+    .person-role {
+      font-size: 0.8rem;
+      color: var(--color-accent);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+    }
+
+    .person-linkedin {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--color-accent);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid rgba(255,82,0,0.3);
+    }
+    .person-linkedin:hover { border-color: var(--color-accent); }
+
+    .person-bio {
+      font-size: 0.95rem;
+      line-height: 1.8;
+      color: #333;
+      margin-bottom: 0.6rem;
+    }
+    .person-bio:last-child { margin-bottom: 0; }
+
+    /* ── VIDEO BLOCK ── */
+    .video-grid {
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 2.5rem;
+      align-items: start;
+    }
+
+    .video-slot {
+      background: rgba(255,255,255,0.40);
+      border: 1.5px solid rgba(255,255,255,0.6);
+      border-radius: 0.75rem;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      position: relative;
+    }
+    .video-slot a { display: block; width: 100%; height: 100%; }
+    .video-slot img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      border-radius: 0.5rem;
+      display: block;
+    }
+    .video-slot-label {
+      position: absolute;
+      bottom: 1rem; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255,82,0,0.88);
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.35rem 0.9rem;
+      border-radius: 2rem;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .video-info h3 {
+      font-family: var(--font-heading);
+      font-size: 1.8rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #111;
+      margin-bottom: 0.75rem;
+    }
+    .video-description {
+      font-size: 0.9rem;
+      line-height: 1.75;
+      color: #333;
+      margin-bottom: 1.25rem;
+    }
+    .transcript-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.55rem 1.2rem;
+      background: var(--color-accent);
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border-radius: 2rem;
+      transition: opacity 0.2s;
+    }
+    .transcript-btn:hover { opacity: 0.85; }
+    .transcript-note {
+      margin-top: 0.65rem;
+      font-size: 0.72rem;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    /* ── PULLQUOTE BLOCK ── */
+    .pullquote blockquote {
+      font-family: var(--font-heading);
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+      border-left: 5px solid var(--color-accent);
+      padding-left: 1.5rem;
+      text-transform: uppercase;
+      color: #111;
+    }
+    .pullquote cite {
+      font-size: 0.8rem;
+      font-style: normal;
+      color: var(--color-accent);
+      padding-left: 2rem;
+      display: block;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ── PERSPECTIVE BLOCK ── */
+    .perspective-header h3 {
+      font-family: var(--font-heading);
+      font-size: 2.4rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #111;
+      margin-bottom: 0.4rem;
+    }
+    .perspective-subtitle {
+      font-size: 0.9rem;
+      color: #555;
+      margin-bottom: 1.75rem;
+    }
+    .perspective-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+    .perspective-card {
+      background: rgba(255,255,255,0.50);
+      border: 1.5px solid rgba(255,255,255,0.65);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .perspective-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--color-accent);
+    }
+    .perspective-title {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #111;
+    }
+    .perspective-body {
+      font-size: 0.9rem;
+      line-height: 1.75;
+      color: #333;
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 700px) {
+      header { padding: 0 1rem; }
+      .header-title { font-size: 0.85rem; }
+      .header-spacer { width: 60px; }
+
+      .interview-block { padding: 1rem 1rem 0; }
+      .block-inner { padding: 1.5rem; border-radius: 1rem; }
+
+      .person-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+      .person-photo-slot { max-width: 160px; aspect-ratio: 1/1; border-radius: 50%; }
+      .person-info h3 { font-size: 2rem; }
+
+      .video-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+
+      .pullquote blockquote { font-size: clamp(1.3rem, 5.5vw, 2rem); }
+
+      .perspective-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a class="header-back" href="index.html">Back</a>
+    <div class="header-title">Interview</div>
+    <div class="header-spacer"></div>
+  </header>
+
+  <main>
+
+    <!-- Person overview -->
+    <div class="interview-block">
+      <div class="block-inner">
+        <div class="person-grid">
+          <div class="person-photo-slot">
+            <img src="Justin.jpeg" alt="Justin Marmulak">
+          </div>
+          <div class="person-info">
+            <h3>Justin Marmulak</h3>
+            <p class="person-role">Production Coordinator · Netflix Animation Studios</p>
+            <a class="person-linkedin" href="https://www.linkedin.com/in/justinmarmulak/" target="_blank" rel="noopener">
+              linkedin.com/in/justinmarmulak ↗
+            </a>
+            <p class="person-bio">
+              <strong>Production Coordinator, Netflix Animation</strong> — Conference Co-Chair, Spark Animation.
+            </p>
+            <p class="person-bio">
+              Justin navigates the intersection of <strong>creative leadership and production operations</strong> at Netflix Animation. Rooted in an <strong>"artist-first" philosophy</strong>, he oversees complex workflows and serves as a leadership figure in the industry.
+            </p>
+            <p class="person-bio">
+              Co-Chair of the <strong>Spark Animation Conference</strong> — where team member Yuri first connected with him. A vocal advocate for the <strong>human touch in storytelling</strong>.
+            </p>
+            <p class="person-bio" style="font-style:italic; color:var(--color-accent); font-weight:600;">
+              "People want to see themselves in the art."
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Video / transcript -->
+    <div class="interview-block">
+      <div class="block-inner">
+        <div class="video-grid">
+          <div class="video-slot">
+            <a href="https://otter.ai/u/4hwEDo549Wyo0-j3e-uR_KRIzL4?tab=chat&view=summary" target="_blank" rel="noopener">
+              <img src="interview-thumbnail.png" alt="Justin Marmulak Interview — click to view transcript">
+              <span class="video-slot-label">View Transcript ↗</span>
+            </a>
+          </div>
+          <div class="video-info">
+            <h3>Justin on AI &amp; the Future of Animation</h3>
+            <p class="video-description">
+              Justin reflects on how AI tools are already influencing production timelines at Netflix Animation — from pre-visualization to rendering — and shares his prediction that audiences will ultimately gravitate toward animation made with genuine human vision.
+            </p>
+            <a class="transcript-btn" href="https://otter.ai/u/4hwEDo549Wyo0-j3e-uR_KRIzL4?tab=chat&view=summary" target="_blank" rel="noopener">
+              Read the Interview Transcript ↗
+            </a>
+            <p class="transcript-note">Skip the 25-min video — the AI transcript summary on Otter.ai gives you the key insights in minutes.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pullquote -->
+    <div class="interview-block">
+      <div class="block-inner pullquote">
+        <blockquote>"People are going to prefer the other. People want to see themselves in the art."</blockquote>
+        <cite>— Justin Marmulak, Production Coordinator · Netflix Animation Studios</cite>
+      </div>
+    </div>
+
+    <!-- Perspective -->
+    <div class="interview-block" style="padding-bottom: 0;">
+      <div class="block-inner">
+        <div class="perspective-header">
+          <h3>Perspective</h3>
+          <p class="perspective-subtitle">Justin's outlook on AI in animation — from today through 2030+</p>
+        </div>
+        <div class="perspective-grid">
+          <div class="perspective-card">
+            <div class="perspective-label">Current Use</div>
+            <div class="perspective-title">Outlook</div>
+            <p class="perspective-body">Utilizing AI (Gemini / G Suite) for administrative automation like meeting summaries and email organization.</p>
+          </div>
+          <div class="perspective-card">
+            <div class="perspective-label">The 2027 View</div>
+            <div class="perspective-title">Near Future</div>
+            <p class="perspective-body">Predicting AI use in pre-visualization and temporary audio generation to speed up the iterative process.</p>
+          </div>
+          <div class="perspective-card">
+            <div class="perspective-label">The 2030+ Vision</div>
+            <div class="perspective-title">Long Term</div>
+            <p class="perspective-body">AI as a sophisticated "AB testing" tool for cinematography and lighting, while creative leadership remains human-led.</p>
+          </div>
+          <div class="perspective-card">
+            <div class="perspective-label">The Human Factor</div>
+            <div class="perspective-title">Core Belief</div>
+            <p class="perspective-body">High-end studios like Netflix prioritize auteurs and organic skills to create lasting, emotionally resonant properties.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+</body>
+</html>
