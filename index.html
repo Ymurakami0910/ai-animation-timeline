@@ -3261,7 +3261,6 @@
         const panelIndex = parseInt(dot.dataset.panel);
         const target = document.querySelector(`[data-panel="${panelIndex}"]`);
         if (target) {
-          target.scrollTop = 0;  // reset internal scroll before jumping
           target.scrollIntoView({ behavior: 'smooth', inline: 'start' });
           setActivePanel(panelIndex);
         }
@@ -3494,7 +3493,7 @@
       if (currentPanel > 0) {
         setActivePanel(currentPanel - 1);
         const target = panels[currentPanel];
-        target.scrollTop = 0;  // reset internal vertical scroll position
+        target.scrollTop = 0;
         target.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
         updateArrows();
       }
@@ -3504,7 +3503,7 @@
       if (currentPanel < totalPanels - 1) {
         setActivePanel(currentPanel + 1);
         const target = panels[currentPanel];
-        target.scrollTop = 0;  // reset internal vertical scroll position
+        target.scrollTop = 0;
         target.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
         updateArrows();
       }
