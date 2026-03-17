@@ -3297,7 +3297,10 @@
     });
 
     let scrollTimeout;
+    let isJumping = false; // flag to ignore scroll events during programmatic jumps
+
     timeline.addEventListener('scroll', () => {
+      if (isJumping) return; // ignore scroll events triggered by our own jump
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
         // Detect active panel by which is most centered in the viewport
@@ -3513,25 +3516,31 @@
     function updateArrows() {
       const inInterview = currentView === 'interview';
       arrowLeft.classList.toggle('hidden-arrow',  inInterview || currentPanel === 0);
-      arrowRight.classList.toggle('hidden-arrow', inInterview || currentPanel === totalPanels - 1);
+      arrowRight.classList.toggle('hidden-arrow', inInterview);
     }
 
     arrowLeft.addEventListener('click', () => {
       if (currentPanel > 0) {
+        isJumping = true;
         setActivePanel(currentPanel - 1);
         panels[currentPanel].scrollTop = 0;
-        panels[currentPanel].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+        timeline.scrollTo({ left: panels[currentPanel].offsetLeft, behavior: 'smooth' });
+        setTimeout(() => { isJumping = false; }, 400);
         updateArrows();
       }
     });
 
     arrowRight.addEventListener('click', () => {
+      isJumping = true;
       if (currentPanel < totalPanels - 1) {
         setActivePanel(currentPanel + 1);
-        panels[currentPanel].scrollTop = 0;
-        panels[currentPanel].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
-        updateArrows();
+      } else {
+        setActivePanel(0);
       }
+      panels[currentPanel].scrollTop = 0;
+      timeline.scrollTo({ left: panels[currentPanel].offsetLeft, behavior: 'smooth' });
+      setTimeout(() => { isJumping = false; }, 400);
+      updateArrows();
     });
 
     // Stay in sync when user scrolls manually
