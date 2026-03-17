@@ -3521,25 +3521,26 @@
 
     arrowLeft.addEventListener('click', () => {
       if (currentPanel > 0) {
-        isJumping = true;
         setActivePanel(currentPanel - 1);
         panels[currentPanel].scrollTop = 0;
-        timeline.scrollTo({ left: panels[currentPanel].offsetLeft, behavior: 'smooth' });
-        setTimeout(() => { isJumping = false; }, 400);
+        panels[currentPanel].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
         updateArrows();
       }
     });
 
     arrowRight.addEventListener('click', () => {
-      isJumping = true;
       if (currentPanel < totalPanels - 1) {
         setActivePanel(currentPanel + 1);
+        panels[currentPanel].scrollTop = 0;
+        panels[currentPanel].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
       } else {
+        // Last panel → loop to first
+        isJumping = true;
         setActivePanel(0);
+        panels[0].scrollTop = 0;
+        timeline.scrollTo({ left: 0, behavior: 'instant' });
+        setTimeout(() => { isJumping = false; }, 300);
       }
-      panels[currentPanel].scrollTop = 0;
-      timeline.scrollTo({ left: panels[currentPanel].offsetLeft, behavior: 'smooth' });
-      setTimeout(() => { isJumping = false; }, 400);
       updateArrows();
     });
 
