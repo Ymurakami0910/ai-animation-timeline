@@ -337,7 +337,7 @@
     ---------------------------------------------------------- */
     .timeline {
       display: flex;
-      height: 100vh;
+      height: 100dvh;
       overflow-x: auto;
       overflow-y: hidden;
       scroll-snap-type: x mandatory;
@@ -360,16 +360,19 @@
     ---------------------------------------------------------- */
     .panel-intro {
       min-width: 100vw;
-      height: 100vh;
+      height: 100dvh;
+      min-height: 100dvh;
       scroll-snap-align: start;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       text-align: center;
-      padding: 4rem;
+      padding: 4rem 4rem calc(100px + env(safe-area-inset-bottom)) 4rem;
       position: relative;
-      overflow: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overflow-x: hidden;
       background: transparent; /* Gradient fully visible behind card */
     }
 
@@ -477,13 +480,17 @@
     ---------------------------------------------------------- */
     .panel-year {
       min-width: 100vw;
-      height: 100vh;
+      height: 100dvh;
+      min-height: 100dvh;
       scroll-snap-align: start;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding: 6rem 6rem 4rem;
+      padding: 6rem 6rem calc(100px + env(safe-area-inset-bottom)) 6rem;
       position: relative;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overflow-x: hidden;
       background: transparent; /* Gradient fully visible */
     }
 
@@ -931,15 +938,19 @@
     ---------------------------------------------------------- */
     .panel-closing {
       min-width: 100vw;
-      height: 100vh;
+      height: 100dvh;
+      min-height: 100dvh;
       scroll-snap-align: start;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       text-align: center;
-      padding: 4rem;
+      padding: 4rem 4rem calc(100px + env(safe-area-inset-bottom)) 4rem;
       position: relative;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overflow-x: hidden;
       background: transparent; /* Gradient visible */
     }
 
@@ -1108,14 +1119,22 @@
       position: fixed;
       inset: 0;
       background: transparent;
-      overflow-y: scroll;
+      overflow-y: auto;
       overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
       z-index: 50;
       touch-action: pan-y;
       -webkit-overflow-scrolling: touch;
     }
 
     .interview-section.active { display: block; }
+
+    /* Fix 3: interview content scrolls inside its container */
+    .interview-content {
+      overflow-y: auto;
+      max-height: 100%;
+      -webkit-overflow-scrolling: touch;
+    }
 
     /* Interview blocks: transparent, gradient visible at edges */
     .interview-block {
@@ -1575,15 +1594,10 @@
 
     /* ----------------------------------------------------------
        GLOBAL OVERFLOW FIX
-       Prevent content escaping glass containers on all panels.
-       max-height + overflow-y: auto ensures scroll rather than overflow.
+       Body stays locked (overflow: hidden — set on html/body above).
+       Panels scroll internally via overflow-y: auto (set on each panel).
+       Only pane-content-body scrolls inside scenario cards.
     ---------------------------------------------------------- */
-
-    /* All panel content sits inside the glass card — never bleeds out */
-    .panel-year,
-    .panel-closing {
-      overflow: hidden;
-    }
 
     /* ----------------------------------------------------------
        CLOSING PANEL — two-column layout
