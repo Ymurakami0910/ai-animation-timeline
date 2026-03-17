@@ -1892,19 +1892,19 @@
     .closing-video-col {
       display: flex;
       flex-direction: column;
-      align-items: center;          /* center thumbnail horizontally in the column */
-      justify-content: center;      /* center vertically */
+      align-items: center;
+      justify-content: center;
       gap: 0.75rem;
-      height: 100%;
-      flex-shrink: 0;
+      min-height: 0;         /* allows flex child to shrink within container */
+      overflow: hidden;      /* clips thumb if it would overflow */
     }
 
-    /* YouTube thumb: portrait ratio, max height drives width */
+    /* YouTube thumb: portrait ratio, constrained by available height */
     .closing-yt-thumb {
       position: relative;
-      height: 100%;
+      min-height: 0;
       max-height: 100%;
-      width: auto;                  /* width follows the aspect ratio */
+      width: auto;
       aspect-ratio: 9 / 16;
       max-width: 100%;
       border-radius: 0.75rem;
