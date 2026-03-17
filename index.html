@@ -1107,10 +1107,12 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: transparent; /* Gradient always visible */
+      background: transparent;
       overflow-y: scroll;
-      scroll-snap-type: y mandatory;
+      overflow-x: hidden;
       z-index: 50;
+      touch-action: pan-y;
+      -webkit-overflow-scrolling: touch;
     }
 
     .interview-section.active { display: block; }
@@ -1118,7 +1120,6 @@
     /* Interview blocks: transparent, gradient visible at edges */
     .interview-block {
       min-height: 100vh;
-      scroll-snap-align: start;
       display: flex;
       align-items: center;
       padding: 7rem 6rem 4rem;
@@ -1957,9 +1958,11 @@
         align-items: stretch;
       }
 
-      /* ---- NAV ARROWS — hidden on mobile, swipe handles navigation ---- */
+      /* ---- NAV ARROWS — smaller on mobile ---- */
       .nav-arrow {
-        display: none !important;
+        width: 2rem;
+        height: 2rem;
+        font-size: 0.9rem;
       }
 
       /* ---- NAV DOTS ---- */
@@ -1972,6 +1975,7 @@
         min-width: 100vw;
         height: 100vh;
         overflow-y: auto;
+        touch-action: pan-y;
         -webkit-overflow-scrolling: touch;
       }
       .panel-intro h1 { font-size: clamp(2.5rem, 12vw, 4.5rem); }
@@ -1983,10 +1987,11 @@
         min-width: 100vw;
         width: 100vw;
         height: 100vh;
-        overflow-y: auto !important;  /* internal vertical scroll */
+        overflow-y: auto !important;
         overflow-x: hidden;
+        touch-action: pan-y;
         -webkit-overflow-scrolling: touch;
-        padding: calc(var(--header-h) + 1.5rem) 1.25rem 3rem;
+        padding: calc(var(--header-h) + 1.5rem) 1.25rem calc(80px + env(safe-area-inset-bottom, 0px));
         display: flex;
         flex-direction: column;
         justify-content: flex-start;
@@ -2090,8 +2095,9 @@
         height: 100vh;
         overflow-y: auto !important;
         overflow-x: hidden;
+        touch-action: pan-y;
         -webkit-overflow-scrolling: touch;
-        padding: calc(var(--header-h) + 1.5rem) 1.25rem 3rem !important;
+        padding: calc(var(--header-h) + 1.5rem) 1.25rem calc(80px + env(safe-area-inset-bottom, 0px)) !important;
         display: flex;
         flex-direction: column;
         justify-content: flex-start;
@@ -3261,7 +3267,8 @@
           if (dist < closestDist) { closestDist = dist; closest = i; }
         });
         setActivePanel(closest);
-      }, 80);
+        updateArrows();
+      }, 150);
     });
 
 
@@ -3521,36 +3528,27 @@
     });
 
     // ── iOS Safari: vertical scroll inside timeline panels ───────────────────
+    
+
+
+    // iOS: vertical scroll inside horizontal timeline panels
     (function () {
       var sx = 0, sy = 0, el = null, dir = null;
       var tl = document.getElementById('timeline');
-      var iSection = document.getElementById('interviewSection');
+      var iSec = document.getElementById('interviewSection');
       if (!tl) return;
-
       tl.addEventListener('touchstart', function (e) {
-        // Don't intercept if interview is showing — it scrolls natively
-        if (iSection && iSection.classList.contains('active')) return;
-        sx = e.touches[0].clientX;
-        sy = e.touches[0].clientY;
-        dir = null;
+        if (iSec && iSec.classList.contains('active')) return;
+        sx = e.touches[0].clientX; sy = e.touches[0].clientY; dir = null;
         el = e.target.closest('.panel-year, .panel-closing, .panel-intro');
       }, { passive: true });
-
       tl.addEventListener('touchmove', function (e) {
         if (!el) return;
-        var dx = Math.abs(e.touches[0].clientX - sx);
-        var dy = Math.abs(e.touches[0].clientY - sy);
+        var dx = Math.abs(e.touches[0].clientX - sx), dy = Math.abs(e.touches[0].clientY - sy);
         if (dir === null && (dx > 5 || dy > 5)) dir = dy > dx;
-        if (dir) {
-          el.scrollTop += sy - e.touches[0].clientY;
-          sy = e.touches[0].clientY;
-          e.preventDefault();
-        }
+        if (dir) { el.scrollTop += sy - e.touches[0].clientY; sy = e.touches[0].clientY; e.preventDefault(); }
       }, { passive: false });
-
-      tl.addEventListener('touchend', function () {
-        dir = null; el = null;
-      }, { passive: true });
+      tl.addEventListener('touchend', function () { dir = null; el = null; }, { passive: true });
     }());
 
   </script>
