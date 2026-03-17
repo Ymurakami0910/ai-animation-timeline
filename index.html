@@ -1119,9 +1119,8 @@
 
     /* Interview blocks: transparent, gradient visible at edges */
     .interview-block {
-      min-height: 100vh;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       padding: 7rem 6rem 4rem;
       position: relative;
       background: transparent;
@@ -1971,7 +1970,7 @@
 
       /* ---- INTRO PANEL ---- */
       .panel-intro {
-        padding: calc(var(--header-h) + 2rem) 1.5rem 2rem;
+        padding: calc(var(--header-h) + 2rem) 1.5rem calc(80px + env(safe-area-inset-bottom, 0px));
         min-width: 100vw;
         height: 100vh;
         overflow-y: auto;
@@ -2172,7 +2171,7 @@
       .iframe-modal-header { padding: 0.6rem 1rem; }
 
       /* ---- INTERVIEW SECTION ---- */
-      .interview-block { padding: calc(var(--header-h) + 1rem) 1.25rem 1.5rem; }
+      .interview-block { padding: calc(var(--header-h) + 1rem) 1.25rem calc(60px + env(safe-area-inset-bottom, 0px)); }
       .interview-block::before { inset: calc(var(--header-h) + 0.5rem) 0.5rem 0.5rem; }
       .block-person .block-inner,
       .block-video .block-inner { grid-template-columns: 1fr; gap: 1.25rem; }
