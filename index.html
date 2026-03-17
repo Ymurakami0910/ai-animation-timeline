@@ -337,7 +337,7 @@
     ---------------------------------------------------------- */
     .timeline {
       display: flex;
-      height: 100dvh;
+      height: 100vh;
       overflow-x: auto;
       overflow-y: hidden;
       scroll-snap-type: x mandatory;
@@ -360,19 +360,16 @@
     ---------------------------------------------------------- */
     .panel-intro {
       min-width: 100vw;
-      height: 100dvh;
-      min-height: 100dvh;
+      height: 100vh;
       scroll-snap-align: start;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       text-align: center;
-      padding: 4rem 4rem calc(100px + env(safe-area-inset-bottom)) 4rem;
+      padding: 4rem;
       position: relative;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      overflow-x: hidden;
+      overflow: hidden;
       background: transparent; /* Gradient fully visible behind card */
     }
 
@@ -480,17 +477,13 @@
     ---------------------------------------------------------- */
     .panel-year {
       min-width: 100vw;
-      height: 100dvh;
-      min-height: 100dvh;
+      height: 100vh;
       scroll-snap-align: start;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding: 6rem 6rem calc(100px + env(safe-area-inset-bottom)) 6rem;
+      padding: 6rem 6rem 4rem;
       position: relative;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      overflow-x: hidden;
       background: transparent; /* Gradient fully visible */
     }
 
@@ -938,19 +931,15 @@
     ---------------------------------------------------------- */
     .panel-closing {
       min-width: 100vw;
-      height: 100dvh;
-      min-height: 100dvh;
+      height: 100vh;
       scroll-snap-align: start;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       text-align: center;
-      padding: 4rem 4rem calc(100px + env(safe-area-inset-bottom)) 4rem;
+      padding: 4rem;
       position: relative;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      overflow-x: hidden;
       background: transparent; /* Gradient visible */
     }
 
@@ -1118,23 +1107,17 @@
       display: none;
       position: fixed;
       inset: 0;
+      width: 100%;
+      height: 100%;          /* explicit height required for iOS overflow-y scroll */
       background: transparent;
-      overflow-y: auto;
+      overflow-y: scroll;
       overflow-x: hidden;
-      -webkit-overflow-scrolling: touch;
       z-index: 50;
       touch-action: pan-y;
       -webkit-overflow-scrolling: touch;
     }
 
     .interview-section.active { display: block; }
-
-    /* Fix 3: interview content scrolls inside its container */
-    .interview-content {
-      overflow-y: auto;
-      max-height: 100%;
-      -webkit-overflow-scrolling: touch;
-    }
 
     /* Interview blocks: transparent, gradient visible at edges */
     .interview-block {
@@ -1594,10 +1577,15 @@
 
     /* ----------------------------------------------------------
        GLOBAL OVERFLOW FIX
-       Body stays locked (overflow: hidden — set on html/body above).
-       Panels scroll internally via overflow-y: auto (set on each panel).
-       Only pane-content-body scrolls inside scenario cards.
+       Prevent content escaping glass containers on all panels.
+       max-height + overflow-y: auto ensures scroll rather than overflow.
     ---------------------------------------------------------- */
+
+    /* All panel content sits inside the glass card — never bleeds out */
+    .panel-year,
+    .panel-closing {
+      overflow: hidden;
+    }
 
     /* ----------------------------------------------------------
        CLOSING PANEL — two-column layout
@@ -1788,11 +1776,19 @@
        .pane-content-body: the ONLY thing that scrolls
     ---------------------------------------------------------- */
 
-    /* Panel: strict column so year-header + scenario-content stack */
+    /* Panel: strict column so year-header + scenario-content stack — desktop only */
+    @media (min-width: 901px) {
+      .panel-year {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+    }
+
+    /* On all sizes: column layout */
     .panel-year {
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
 
     /* Year header never shrinks */
@@ -1805,11 +1801,16 @@
       /* FIX: do NOT set overflow:hidden here — pane-content-body handles it */
     }
 
-    /* Closing panel: same flex-column pattern */
+    /* Closing panel: same flex-column pattern — desktop only overflow hidden */
+    @media (min-width: 901px) {
+      .panel-closing {
+        overflow: hidden;
+      }
+    }
+
     .panel-closing {
       display: flex;
       flex-direction: column;
-      overflow: hidden;
       align-items: flex-start;
       text-align: left;
       padding-left: 6rem;
@@ -3260,6 +3261,7 @@
         const panelIndex = parseInt(dot.dataset.panel);
         const target = document.querySelector(`[data-panel="${panelIndex}"]`);
         if (target) {
+          target.scrollTop = 0;  // reset internal scroll before jumping
           target.scrollIntoView({ behavior: 'smooth', inline: 'start' });
           setActivePanel(panelIndex);
         }
@@ -3293,9 +3295,11 @@
       if (currentView === 'timeline') {
         if (e.key === 'ArrowRight' && currentPanel < totalPanels - 1) {
           setActivePanel(currentPanel + 1);
+          panels[currentPanel].scrollTop = 0;
           panels[currentPanel].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
         } else if (e.key === 'ArrowLeft' && currentPanel > 0) {
           setActivePanel(currentPanel - 1);
+          panels[currentPanel].scrollTop = 0;
           panels[currentPanel].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
         }
       }
@@ -3489,7 +3493,9 @@
     arrowLeft.addEventListener('click', () => {
       if (currentPanel > 0) {
         setActivePanel(currentPanel - 1);
-        panels[currentPanel].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+        const target = panels[currentPanel];
+        target.scrollTop = 0;  // reset internal vertical scroll position
+        target.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
         updateArrows();
       }
     });
@@ -3497,7 +3503,9 @@
     arrowRight.addEventListener('click', () => {
       if (currentPanel < totalPanels - 1) {
         setActivePanel(currentPanel + 1);
-        panels[currentPanel].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+        const target = panels[currentPanel];
+        target.scrollTop = 0;  // reset internal vertical scroll position
+        target.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
         updateArrows();
       }
     });
